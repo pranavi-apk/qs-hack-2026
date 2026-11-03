@@ -1079,14 +1079,14 @@ export default function App() {
                     <span>{t.pills.currentVariation}</span>
                     <span className="font-mono bg-emerald-100 px-2 py-0.5 rounded">V-2026-017</span>
                     <span className="text-slate-400">•</span>
-                    <span className="text-slate-600">{t.asBuilt.sub}</span>
+                    <span className="text-slate-600">Lobby Floor Area</span>
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t.asBuilt.title}</h2>
                 </div>
 
                 <div className="flex space-x-2">
-                  <span className="bg-emerald-100 text-emerald-800 text-xs px-3 py-1.5 rounded-full font-bold">
-                    CV Confirmed
+                  <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1.5 rounded-full font-bold">
+                    In Progress
                   </span>
                   <button
                     onClick={() => setActiveTab('report')}
@@ -1098,32 +1098,63 @@ export default function App() {
                 </div>
               </div>
 
-              {/* CV Layout: High-Res Roboflow/Supervision Interactive CV Viewer + Completeness Gauge */}
+              {/* Exact Screen 5 layout from your proposal mockup */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <AsBuiltRoboflowViewer lang={lang} />
+                {/* Left: Site Photo Box */}
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E5E0D0] p-6 shadow-sm space-y-4">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-slate-900 text-sm">Site Photo</span>
+                    <span className="text-slate-400 font-mono">Captured: 28 Jul 2026 10:15 AM</span>
+                  </div>
+
+                  {/* Clean original photo frame with the green floor boundary from your design */}
+                  <div className="relative rounded-2xl overflow-hidden border border-slate-300 aspect-[16/10] bg-slate-900 flex items-center justify-center shadow-md">
+                    <img
+                      src="/original_asbuilt_photo.png"
+                      alt="Lobby Floor Area As-Built Inspection"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Bottom Thumbnail Strip */}
+                  <div className="flex items-center space-x-3 pt-2">
+                    <div className="w-18 h-12 rounded-lg overflow-hidden border-2 border-emerald-600 shadow-sm cursor-pointer">
+                      <img src="/original_asbuilt_photo.png" className="w-full h-full object-cover" alt="Angle 1" />
+                    </div>
+                    <div className="w-18 h-12 rounded-lg overflow-hidden border border-slate-300 opacity-60 hover:opacity-100 shadow-sm cursor-pointer transition-opacity">
+                      <img src="/original_asbuilt_photo.png" className="w-full h-full object-cover scale-110" alt="Angle 2" />
+                    </div>
+                    <div className="w-18 h-12 rounded-lg overflow-hidden border border-slate-300 opacity-60 hover:opacity-100 shadow-sm cursor-pointer transition-opacity">
+                      <img src="/original_asbuilt_photo.png" className="w-full h-full object-cover scale-125" alt="Angle 3" />
+                    </div>
+                    <span className="text-[11px] text-slate-400 ml-2 font-mono">
+                      Captured: 28 Jul 2026 10:15 AM
+                    </span>
+                  </div>
                 </div>
 
-                {/* Right Completeness Classifier Card */}
+                {/* Right: Completeness Classifier Box */}
                 <div className="bg-white rounded-2xl border border-[#E5E0D0] p-6 shadow-sm flex flex-col justify-between">
                   <div>
-                    <h3 className="font-extrabold text-slate-900 text-base mb-1">{t.asBuilt.classifierTitle}</h3>
-                    <p className="text-[11px] text-slate-500 mb-6">{t.asBuilt.classifierSub}</p>
+                    <h3 className="font-bold text-slate-900 text-base mb-1">Completeness Classifier</h3>
+                    <p className="text-xs text-slate-400 mb-6">Bounding element taxonomy verification</p>
 
+                    {/* Circular Completeness Indicator from Mockup */}
                     <div className="py-4 flex flex-col items-center">
-                      <div className="relative w-40 h-40 rounded-full border-8 border-emerald-800/10 flex items-center justify-center bg-emerald-50 shadow-inner">
+                      <div className="relative w-40 h-40 rounded-full border-8 border-emerald-700/20 flex items-center justify-center bg-[#FAF8F3] shadow-inner">
                         <div className="text-center">
-                          <div className="text-4xl font-black text-emerald-950 font-mono">60%</div>
-                          <div className="text-[11px] font-bold text-emerald-700 uppercase">{t.asBuilt.preComplete}</div>
+                          <div className="text-4xl font-black text-slate-900 font-mono">60%</div>
+                          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Pre-Complete</div>
                         </div>
                       </div>
                     </div>
 
+                    {/* Status Breakdown Legend */}
                     <div className="space-y-3 mt-4 text-xs">
                       <div className="flex justify-between items-center">
                         <span className="flex items-center text-slate-700">
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 mr-2"></span>
-                          {t.asBuilt.completedSub}
+                          Completed
                         </span>
                         <span className="font-mono font-bold text-slate-900">60%</span>
                       </div>
@@ -1131,32 +1162,34 @@ export default function App() {
                       <div className="flex justify-between items-center">
                         <span className="flex items-center text-slate-700">
                           <span className="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2"></span>
-                          {t.asBuilt.inProgressSub}
+                          In Progress
                         </span>
                         <span className="font-mono font-bold text-slate-900">30%</span>
                       </div>
 
                       <div className="flex justify-between items-center">
                         <span className="flex items-center text-slate-700">
-                          <span className="w-2.5 h-2.5 rounded-full bg-slate-300 mr-2"></span>
-                          {t.asBuilt.notStartedSub}
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-400 mr-2"></span>
+                          Not Started
                         </span>
                         <span className="font-mono font-bold text-slate-900">10%</span>
                       </div>
                     </div>
 
+                    {/* AI Confidence Bar */}
                     <div className="mt-6 pt-4 border-t border-slate-100">
                       <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-slate-500 font-medium">{t.asBuilt.confidence}</span>
-                        <span className="font-mono font-bold text-emerald-700">92%</span>
+                        <span className="text-slate-500 font-medium">AI Confidence</span>
+                        <span className="font-mono font-bold text-emerald-800">92%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-emerald-600 h-full" style={{ width: '92%' }}></div>
+                        <div className="bg-[#1A3D32] h-full" style={{ width: '92%' }}></div>
                       </div>
                     </div>
 
-                    <div className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 leading-relaxed">
-                      {t.asBuilt.deltaNote}
+                    {/* Delta Valued Note */}
+                    <div className="mt-4 p-3 bg-[#FAF8F3] rounded-xl border border-[#E5E0D0] text-xs text-slate-700 leading-relaxed">
+                      <strong>Delta Valued:</strong> 40% of the area is payable.
                     </div>
                   </div>
 
