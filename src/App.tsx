@@ -22,6 +22,8 @@ import {
 import confetti from 'canvas-confetti';
 import { translations, Language } from './i18n';
 
+import AsBuiltRoboflowViewer from './AsBuiltRoboflowViewer';
+
 // Types
 type TabType = 'dashboard' | 'impact_trace' | 'fair_value' | 'claim_check' | 'as_built' | 'report';
 
@@ -1096,48 +1098,10 @@ export default function App() {
                 </div>
               </div>
 
-              {/* CV Layout: Photo on Left with Polygon Overlay, Classifier on Right */}
+              {/* CV Layout: High-Res Roboflow/Supervision Interactive CV Viewer + Completeness Gauge */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E5E0D0] p-6 shadow-sm space-y-4">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-900">{t.asBuilt.photoFeed}</span>
-                    <span className="text-slate-400 font-mono">{t.asBuilt.capturedTime}</span>
-                  </div>
-
-                  {/* Clean, authentic As-Built Photo directly extracted from Team Quantum proposal slides */}
-                  <div className="relative rounded-2xl overflow-hidden border border-slate-300 aspect-[16/10] bg-slate-950 flex items-center justify-center shadow-inner group">
-                    <img
-                      src="/asbuilt_site_feed.png"
-                      alt="Site Inspection Floor Area"
-                      className="w-full h-full object-cover"
-                    />
-
-                    {/* Interactive YOLO/SAM Detection Floating Pill */}
-                    <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur text-white px-3.5 py-1.5 rounded-xl text-xs font-mono flex items-center space-x-2 border border-white/20 shadow-lg">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span className="font-semibold text-emerald-300">{t.asBuilt.maskTag}</span>
-                    </div>
-
-                    <div className="absolute top-4 right-4 bg-emerald-950/80 backdrop-blur text-emerald-200 px-3 py-1 rounded-lg text-[10px] font-mono border border-emerald-500/30">
-                      YOLOv8-Seg: Floor_Screed_01 (Conf: 0.94)
-                    </div>
-                  </div>
-
-                  {/* Real Site Camera Thumbnails from proposal */}
-                  <div className="flex space-x-3 pt-2 items-center">
-                    <div className="w-20 h-14 rounded-xl overflow-hidden border-2 border-emerald-600 cursor-pointer shadow-md transition-transform hover:scale-105">
-                      <img src="/asbuilt_site_feed.png" className="w-full h-full object-cover" alt="Cam 1" />
-                    </div>
-                    <div className="w-20 h-14 rounded-xl overflow-hidden border border-slate-300 opacity-70 hover:opacity-100 cursor-pointer transition-all hover:scale-105">
-                      <img src="/lobby_site_clean_hd.png" className="w-full h-full object-cover" alt="Cam 2" />
-                    </div>
-                    <div className="w-20 h-14 rounded-xl overflow-hidden border border-slate-300 opacity-70 hover:opacity-100 cursor-pointer transition-all hover:scale-105">
-                      <img src="/card5_exact.png" className="w-full h-full object-cover" alt="Cam 3" />
-                    </div>
-                    <span className="text-[11px] text-slate-400 font-medium ml-2">
-                      {lang === 'en' ? 'Angle 1 (East entrance)' : lang === 'zh-HK' ? '視角 1 (東側入口大堂)' : '视角 1 (东侧入口大堂)'}
-                    </span>
-                  </div>
+                <div className="lg:col-span-2">
+                  <AsBuiltRoboflowViewer lang={lang} />
                 </div>
 
                 {/* Right Completeness Classifier Card */}
