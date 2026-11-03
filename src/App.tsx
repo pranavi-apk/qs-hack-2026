@@ -1096,7 +1096,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* CV Layout */}
+              {/* CV Layout: Photo on Left with Polygon Overlay, Classifier on Right */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E5E0D0] p-6 shadow-sm space-y-4">
                   <div className="flex justify-between items-center text-xs">
@@ -1104,37 +1104,39 @@ export default function App() {
                     <span className="text-slate-400 font-mono">{t.asBuilt.capturedTime}</span>
                   </div>
 
-                  <div className="relative rounded-xl overflow-hidden border border-slate-300 aspect-video bg-slate-900 flex items-center justify-center group">
+                  {/* Clean, authentic As-Built Photo directly extracted from Team Quantum proposal slides */}
+                  <div className="relative rounded-2xl overflow-hidden border border-slate-300 aspect-[16/10] bg-slate-950 flex items-center justify-center shadow-inner group">
                     <img
-                      src="https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=1200&q=80"
-                      alt="Construction site lobby"
+                      src="/asbuilt_site_feed.png"
+                      alt="Site Inspection Floor Area"
                       className="w-full h-full object-cover"
                     />
 
-                    {/* SVG Polygon Overlay */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-                      <polygon
-                        points="22,65 78,65 92,92 8,92"
-                        className="fill-emerald-500/40 stroke-emerald-400 stroke-2"
-                      />
-                    </svg>
+                    {/* Interactive YOLO/SAM Detection Floating Pill */}
+                    <div className="absolute bottom-4 left-4 bg-black/80 backdrop-blur text-white px-3.5 py-1.5 rounded-xl text-xs font-mono flex items-center space-x-2 border border-white/20 shadow-lg">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="font-semibold text-emerald-300">{t.asBuilt.maskTag}</span>
+                    </div>
 
-                    <div className="absolute bottom-4 left-4 bg-black/75 backdrop-blur text-white px-3 py-1.5 rounded-lg text-xs font-mono flex items-center space-x-2 border border-white/20">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                      <span>{t.asBuilt.maskTag}</span>
+                    <div className="absolute top-4 right-4 bg-emerald-950/80 backdrop-blur text-emerald-200 px-3 py-1 rounded-lg text-[10px] font-mono border border-emerald-500/30">
+                      YOLOv8-Seg: Floor_Screed_01 (Conf: 0.94)
                     </div>
                   </div>
 
-                  <div className="flex space-x-3 pt-2">
-                    <div className="w-20 h-14 rounded-lg overflow-hidden border-2 border-emerald-600 cursor-pointer shadow-sm">
-                      <img src="https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=200&q=80" className="w-full h-full object-cover" />
+                  {/* Real Site Camera Thumbnails from proposal */}
+                  <div className="flex space-x-3 pt-2 items-center">
+                    <div className="w-20 h-14 rounded-xl overflow-hidden border-2 border-emerald-600 cursor-pointer shadow-md transition-transform hover:scale-105">
+                      <img src="/asbuilt_site_feed.png" className="w-full h-full object-cover" alt="Cam 1" />
                     </div>
-                    <div className="w-20 h-14 rounded-lg overflow-hidden border border-slate-300 opacity-60 hover:opacity-100 cursor-pointer transition-opacity">
-                      <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=200&q=80" className="w-full h-full object-cover" />
+                    <div className="w-20 h-14 rounded-xl overflow-hidden border border-slate-300 opacity-70 hover:opacity-100 cursor-pointer transition-all hover:scale-105">
+                      <img src="/lobby_site_clean_hd.png" className="w-full h-full object-cover" alt="Cam 2" />
                     </div>
-                    <div className="w-20 h-14 rounded-lg overflow-hidden border border-slate-300 opacity-60 hover:opacity-100 cursor-pointer transition-opacity">
-                      <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=200&q=80" className="w-full h-full object-cover" />
+                    <div className="w-20 h-14 rounded-xl overflow-hidden border border-slate-300 opacity-70 hover:opacity-100 cursor-pointer transition-all hover:scale-105">
+                      <img src="/card5_exact.png" className="w-full h-full object-cover" alt="Cam 3" />
                     </div>
+                    <span className="text-[11px] text-slate-400 font-medium ml-2">
+                      {lang === 'en' ? 'Angle 1 (East entrance)' : lang === 'zh-HK' ? '視角 1 (東側入口大堂)' : '视角 1 (东侧入口大堂)'}
+                    </span>
                   </div>
                 </div>
 
