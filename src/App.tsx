@@ -22,8 +22,6 @@ import {
 import confetti from 'canvas-confetti';
 import { translations, Language } from './i18n';
 
-import AsBuiltRoboflowViewer from './AsBuiltRoboflowViewer';
-
 // Types
 type TabType = 'dashboard' | 'impact_trace' | 'fair_value' | 'claim_check' | 'as_built' | 'report';
 
@@ -1110,7 +1108,7 @@ export default function App() {
                   {/* Clean original photo frame with the green floor boundary from your design */}
                   <div className="relative rounded-2xl overflow-hidden border border-slate-300 aspect-[16/10] bg-slate-900 flex items-center justify-center shadow-md">
                     <img
-                      src="/original_asbuilt_photo.png"
+                      src="/asbuilt_lobby_pure_hd.png"
                       alt="Lobby Floor Area As-Built Inspection"
                       className="w-full h-full object-cover"
                     />
@@ -1119,13 +1117,13 @@ export default function App() {
                   {/* Bottom Thumbnail Strip */}
                   <div className="flex items-center space-x-3 pt-2">
                     <div className="w-18 h-12 rounded-lg overflow-hidden border-2 border-emerald-600 shadow-sm cursor-pointer">
-                      <img src="/original_asbuilt_photo.png" className="w-full h-full object-cover" alt="Angle 1" />
+                      <img src="/asbuilt_lobby_pure_hd.png" className="w-full h-full object-cover" alt="Angle 1" />
                     </div>
                     <div className="w-18 h-12 rounded-lg overflow-hidden border border-slate-300 opacity-60 hover:opacity-100 shadow-sm cursor-pointer transition-opacity">
-                      <img src="/original_asbuilt_photo.png" className="w-full h-full object-cover scale-110" alt="Angle 2" />
+                      <img src="/asbuilt_lobby_pure_hd.png" className="w-full h-full object-cover scale-110" alt="Angle 2" />
                     </div>
                     <div className="w-18 h-12 rounded-lg overflow-hidden border border-slate-300 opacity-60 hover:opacity-100 shadow-sm cursor-pointer transition-opacity">
-                      <img src="/original_asbuilt_photo.png" className="w-full h-full object-cover scale-125" alt="Angle 3" />
+                      <img src="/asbuilt_lobby_pure_hd.png" className="w-full h-full object-cover scale-125" alt="Angle 3" />
                     </div>
                     <span className="text-[11px] text-slate-400 ml-2 font-mono">
                       Captured: 28 Jul 2026 10:15 AM
@@ -1139,12 +1137,47 @@ export default function App() {
                     <h3 className="font-bold text-slate-900 text-base mb-1">Completeness Classifier</h3>
                     <p className="text-xs text-slate-400 mb-6">Bounding element taxonomy verification</p>
 
-                    {/* Circular Completeness Indicator from Mockup */}
+                    {/* Circular Completeness Indicator from Mockup - Exact SVG Donut matching Screen 5 */}
                     <div className="py-4 flex flex-col items-center">
-                      <div className="relative w-40 h-40 rounded-full border-8 border-emerald-700/20 flex items-center justify-center bg-[#FAF8F3] shadow-inner">
-                        <div className="text-center">
-                          <div className="text-4xl font-black text-slate-900 font-mono">60%</div>
-                          <div className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Pre-Complete</div>
+                      <div className="relative w-44 h-44 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          {/* 10% Not Started (Dark / Gray segment) */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            stroke="#1B3A2F"
+                            strokeWidth="10"
+                            fill="transparent"
+                            strokeDasharray="238.76"
+                            strokeDashoffset="0"
+                          />
+                          {/* 30% In Progress (Amber/Yellow segment) */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            stroke="#E9B949"
+                            strokeWidth="10"
+                            fill="transparent"
+                            strokeDasharray="238.76"
+                            strokeDashoffset="24"
+                          />
+                          {/* 60% Completed (Muted Green segment) */}
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="38"
+                            stroke="#9BBF85"
+                            strokeWidth="10"
+                            fill="transparent"
+                            strokeDasharray="238.76"
+                            strokeDashoffset="96"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                          <div className="text-3xl font-black text-slate-900 font-mono">60%</div>
+                          <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Pre-Complete</div>
                         </div>
                       </div>
                     </div>
