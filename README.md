@@ -5,11 +5,11 @@
 
 ---
 
-## 🌟 Product UI (Tracy / iFX-style — upload-first)
+## 🌟 Product UI (agent workspace — upload-first)
 
-Light institutional workspace (inspired by Team Iridium’s **Tracy** KYB app at iFX Hack). No pine-green dashboard clutter; **no photo galleries**.
+Interactive QS agent workspace: composer + suggested prompts, then a case view with copilot chat. **No photo galleries** in the certify flow.
 
-1. **Welcome** — Upload the variation pack (drag/drop) **or** open sample **V-2026-017**.
+1. **Home** — Ask Cascade / attach a variation pack **or** open sample **V-2026-017**.
 2. **Documents** — Checklist of BQ / drawing / claim / spec / site records.
 3. **Impact** — Knowledge graph (Neo4j ontology when configured).
 4. **Fair value** — HKSMM4 build-up → **HK$18,750**.
