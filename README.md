@@ -5,42 +5,38 @@
 
 ---
 
-## 🌟 Implemented System Architecture & Screens
+## 🌟 Product UI (Tracy / iFX-style — upload-first)
 
-1. **Screen 1 — Dashboard Overview**:
-   - Real-time KPIs: Active Variations (12), Total Claim Amount ($168,590), Items Checked (328), Flagged Items (23).
-   - Recent Variations audit table with severity flags.
-   - 263-item contract impact breakdown donut chart (Direct vs. Indirect 2-hop / 3-hop).
-   - Integration with **DATA.GOV.HK** public sector benchmarks (ArchSD BWTPI & C&SD trade wages).
+Light institutional workspace (inspired by Team Iridium’s **Tracy** KYB app at iFX Hack). No pine-green dashboard clutter; **no photo galleries**.
 
-2. **Screen 2 — Impact Trace (Knowledge Graph)**:
-   - Interactive radial force graph centered on `V-2026-017` ("Lobby size increase 20%").
-   - 6 radial cluster categories: *Finishes*, *Reinforcement*, *MEP*, *Doors/Frames*, *Formwork*, *Columns*.
-   - Live AI Copilot querying Alibaba Cloud Qwen3.6-plus for contractual interpretation.
+1. **Welcome** — Upload the variation pack (drag/drop) **or** open sample **V-2026-017**.
+2. **Documents** — Checklist of BQ / drawing / claim / spec / site records.
+3. **Impact** — Knowledge graph (Neo4j ontology when configured).
+4. **Fair value** — HKSMM4 build-up → **HK$18,750**.
+5. **Claim check** — Line adjudication; **HK$5,920** inflation (GCC 62).
+6. **Certify** — Milestone table only (qty from Drawing A-201; photos not used for m²).
+7. **Evidence pack** — Cited Cap. 652 payment-response annex (provability, workflow, claim annex, SHA digest). Print/PDF export.
 
-3. **Screen 3 — Fair Value Calculation (HKSMM4)**:
-   - Itemized measurement breakdown (Tiles $600\times600$, Tile Adhesive, Grout, Skirting).
-   - Rate basis traceability (HKSMM4 2024 Edition, Section 6.2.3, Spec 23 40 00).
-   - Cost element breakdown bar (Labour 40%, Material 45%, Plant 10%, Other 5%).
+## 🧩 Built on / related open source (patterns, not a full ERP fork)
 
-4. **Screen 4 — Claim Check (Line-by-Line Adjudication)**:
-   - Contractor Claim vs. Cascade Fair Value Benchmark.
-   - Automatic variance analysis and flagging (Overpriced, Excess Qty).
-   - Detected Inflation Banner: **HK$ 5,920 (26.3% inflation)** flagged under GCC Clause 62.
+| Source | What we reuse | Where in Cascade |
+|--------|----------------|------------------|
+| [OpenConstructionERP](https://github.com/datadrivenconstruction/OpenConstructionERP) (AGPL — **ideas / API shape only**) | Claims evidence reconstruct, change provability, variation→claim trail, payment clock | `evidence_pack.py`, Screen 6 |
+| [pdf2takeoff](https://github.com/ajflow/pdf2takeoff) | Drawing takeoff path when PDF samples arrive | Fair Value qty / drawing takeoff API |
+| Neo4j GraphRAG pattern | Impact ontology | `graph_store.py`, Screen 2 |
 
-5. **Screen 5 — As-Built Verify (Computer Vision Module)**:
-   - Inspection photo view with interactive green polygon floor area segmentation.
-   - Completeness Classifier ($60\%$ Pre-Complete, $30\%$ In-Progress, $10\%$ Not Started).
-   - $92\%$ AI confidence rating for progress certification.
-
-6. **Screen 6 — Cited Valuation Report (Exportable)**:
-   - Executive summary with payable milestone deltas ($7,500 payable).
-   - Traceable citation log: BQ Page, Drawing No., Spec Clause, Site Photo, HKSMM4 Rule.
-   - Official Cap. 652 Security of Payment 30-day compliance statement with an evidence-backed export stamp.
+**HK layer (ours):** HKSMM4 valuation, GCC Clause 62 adjudication, Cap. 652 wording, HA lobby demo V-2026-017, trilingual UI.
 
 ---
 
-## 🚀 Running the Prototype
+## 📐 Measurement stack (local)
+
+- **Drawing qty (120 m² tiles)**: Lobby grid **12 m × 10 m** from **Drawing A-201**, Fair Value line items.
+- **Site photos**: Evidence gallery for milestone audit — not used for m² takeoff in the demo.
+- **Production CV**: SAM/YOLO-seg + homography when real site imagery is available.
+- **Organiser PDFs**: Plug in **[pdf2takeoff](https://github.com/ajflow/pdf2takeoff)** for vector sheet takeoff.
+
+---
 
 ### Backend (FastAPI + Alibaba Qwen3.6-plus LLM)
 ```bash

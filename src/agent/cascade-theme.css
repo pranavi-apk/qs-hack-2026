@@ -1,0 +1,221 @@
+/* Cascade green theme — same Tracy agent layout, different brand colour */
+
+:root {
+  --cascade-ink: #0b1f17;
+  --cascade-ink-2: #132e24;
+  --cascade-green: #0f766e;
+  --cascade-green-bright: #14b8a6;
+  --cascade-green-soft: #ccfbf1;
+  --cascade-green-mid: #5eead4;
+  --cascade-bg: #f0f7f4;
+  --cascade-bg-2: #e7f3ee;
+  --cascade-card: #ffffff;
+  --cascade-line: #cfe3da;
+  --cascade-muted: #5b7368;
+  --cascade-gold-was: #0f766e;
+}
+
+body.agent-app,
+body.agent-app .app-layout,
+body.agent-app .main-wrapper,
+body.agent-app .main-content {
+  background: var(--cascade-bg) !important;
+}
+
+.agent-chat-layout {
+  background-color: var(--cascade-bg) !important;
+  background-image:
+    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.95) 0%, rgba(240, 247, 244, 0.5) 65%),
+    url("data:image/svg+xml,%3Csvg width='1000' height='500' viewBox='0 0 1000 500' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 150 120 Q 250 80 400 130 T 700 100 Q 850 140 950 110 M 100 250 Q 300 200 550 260 T 900 230 M 200 380 Q 450 320 700 370' fill='none' stroke='%23a7d4c3' stroke-width='0.75' stroke-dasharray='3,6' opacity='0.5'/%3E%3Ccircle cx='200' cy='120' r='3' fill='%230f766e' opacity='0.55'/%3E%3Ccircle cx='400' cy='130' r='3' fill='%230f766e' opacity='0.55'/%3E%3Ccircle cx='700' cy='100' r='3' fill='%230f766e' opacity='0.55'/%3E%3Ccircle cx='850' cy='140' r='3' fill='%230f766e' opacity='0.55'/%3E%3C/svg%3E") !important;
+}
+
+.agent-home-layout {
+  background: var(--cascade-bg) !important;
+}
+
+.agent-top,
+.agent-home-layout::before,
+.agent-home-layout::after {
+  background: transparent !important;
+}
+
+.agent-top {
+  background: rgba(240, 247, 244, 0.95) !important;
+  border-bottom-color: var(--cascade-line) !important;
+}
+
+.home-title,
+.home-subtitle-main {
+  color: var(--cascade-ink) !important;
+}
+
+.home-description {
+  color: var(--cascade-muted) !important;
+}
+
+.agent-composer-box {
+  border-color: var(--cascade-line) !important;
+  box-shadow: 0 12px 32px -6px rgba(15, 118, 110, 0.12), 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+}
+
+.agent-composer-box:focus-within {
+  border-color: var(--cascade-green-bright) !important;
+  box-shadow: 0 14px 36px -4px rgba(20, 184, 166, 0.22) !important;
+}
+
+.composer-submit,
+.sidecar-send-btn-round {
+  background: var(--cascade-ink) !important;
+}
+
+.composer-submit:hover,
+.sidecar-send-btn-round:hover {
+  background: var(--cascade-ink-2) !important;
+}
+
+.action-card {
+  border-color: var(--cascade-line) !important;
+  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.05) !important;
+}
+
+.action-card:hover {
+  border-color: rgba(15, 118, 110, 0.45) !important;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.12) !important;
+}
+
+.action-card.highlight-gold-card {
+  border-color: rgba(15, 118, 110, 0.5) !important;
+  background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 70%) !important;
+}
+
+.card-icon {
+  background: var(--cascade-green-soft) !important;
+}
+
+.card-arrow,
+.arrow-right {
+  color: #7a958a !important;
+}
+
+.action-card:hover .card-arrow,
+.sidecar-prompt-pill:hover .arrow-right {
+  color: var(--cascade-green) !important;
+}
+
+.asking-pill {
+  border-color: var(--cascade-line) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #3d5249 !important;
+}
+
+.asking-pill:hover {
+  border-color: var(--cascade-green) !important;
+  color: var(--cascade-ink) !important;
+}
+
+.try-asking-divider span {
+  color: var(--cascade-muted) !important;
+}
+
+.try-asking-divider span::before,
+.try-asking-divider span::after {
+  background: var(--cascade-line) !important;
+}
+
+.uploaded-file-chip,
+.kg-graph-summary-card,
+.doc-file-card,
+.sidecar-msg.agent,
+.metric,
+.panel-subnav-bar {
+  background: #f7fbf9 !important;
+  border-color: var(--cascade-line) !important;
+}
+
+.agent-layout-with-sidebar {
+  background: var(--cascade-bg) !important;
+}
+
+.tracy-dark-sidebar {
+  background: #071510 !important;
+}
+
+.sidebar-nav-item.active {
+  background: #123028 !important;
+  background-image: linear-gradient(135deg, rgba(20, 184, 166, 0.28) 0%, #123028 100%) !important;
+  border-color: rgba(45, 212, 191, 0.45) !important;
+  color: #5eead4 !important;
+}
+
+.sidebar-nav-item:hover {
+  color: #e7f5ef !important;
+}
+
+.kg-badge,
+.btn-return-chat,
+.btn-toggle-copilot {
+  color: var(--cascade-green) !important;
+  border-color: rgba(15, 118, 110, 0.35) !important;
+  background: #ffffff !important;
+}
+
+.btn-toggle-copilot:hover,
+.btn-toggle-copilot.active {
+  background: var(--cascade-green) !important;
+  color: #ffffff !important;
+  border-color: var(--cascade-green) !important;
+}
+
+.agent-main-content-panel {
+  border-right-color: var(--cascade-line) !important;
+}
+
+.agent-sidecar-chat-panel {
+  background: #f4faf7 !important;
+  border-left-color: var(--cascade-line) !important;
+}
+
+.copilot-header-avatar {
+  background: var(--cascade-ink) !important;
+  color: var(--cascade-green-mid) !important;
+}
+
+.sidecar-prompt-pill {
+  border-color: var(--cascade-line) !important;
+}
+
+.sidecar-prompt-pill:hover {
+  border-color: var(--cascade-green) !important;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.1) !important;
+}
+
+.composer-pill-input {
+  border-color: var(--cascade-line) !important;
+}
+
+.pill-icon {
+  background: var(--cascade-green-soft) !important;
+  border-color: var(--cascade-line) !important;
+}
+
+.nav-btn:hover {
+  border-color: var(--cascade-green) !important;
+}
+
+.sidebar-hamburger:hover {
+  border-color: var(--cascade-green) !important;
+}
+
+.node-ubo {
+  background: var(--cascade-green-soft) !important;
+  color: #115e59 !important;
+  border-color: #99f6e4 !important;
+}
+
+.kg-line {
+  background: var(--cascade-green) !important;
+}
+
+.step-list li.done {
+  color: var(--cascade-ink) !important;
+}

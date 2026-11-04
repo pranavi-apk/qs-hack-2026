@@ -48,6 +48,13 @@ export interface Translations {
     indirect2hop: string;
     dataGovHkTitle: string;
     dataGovHkDesc: string;
+    demoFocus: string;
+    metricFairValue: string;
+    metricInflation: string;
+    metricPayable: string;
+    pipelineTitle: string;
+    colFairValue: string;
+    viewGraphBtn: string;
   };
   impactTrace: {
     title: string;
@@ -136,6 +143,14 @@ export interface Translations {
     notStartedSub: string;
     confidence: string;
     deltaNote: string;
+    evidenceCaption: string;
+    milestoneTitle: string;
+    payableTitle: string;
+    withheldTitle: string;
+    drawingLink: string;
+    statusVerified: string;
+    statusProgress: string;
+    statusNotStarted: string;
   };
   report: {
     title: string;
@@ -154,6 +169,49 @@ export interface Translations {
     auditTrailTitle: string;
     conclusionTitle: string;
     conclusionText: string;
+    issuedLabel: string;
+    preparedLabel: string;
+    integrityLabel: string;
+    cap652Title: string;
+    methodologyTitle: string;
+    citationRegisterTitle: string;
+    colCitationId: string;
+    colCategory: string;
+    colSource: string;
+    colReference: string;
+    colSupports: string;
+    valuationLinesTitle: string;
+    deductionsTitle: string;
+    claimVsFair: string;
+    varianceLabel: string;
+    signoffPrepared: string;
+    signoffReviewer: string;
+    packLabel: string;
+    responseDue: string;
+    daysLeft: string;
+    disputedLabel: string;
+    withheldLabel: string;
+    provabilityTitle: string;
+    workflowTitle: string;
+    certMathTitle: string;
+    evidenceThreadTitle: string;
+    claimAnnexTitle: string;
+    subtotalLabel: string;
+    colElement: string;
+    colStatus: string;
+    colProgress: string;
+    colWeight: string;
+    colCitation: string;
+    colItem: string;
+    colClaim: string;
+    colFair: string;
+    colVariance: string;
+    colFlag: string;
+    colReason: string;
+    totalLabel: string;
+    inflationLabel: string;
+    paymentResponseLabel: string;
+    builtOnLabel: string;
   };
 }
 
@@ -206,6 +264,13 @@ export const translations: Record<Language, Translations> = {
       indirect2hop: "Indirect (3-hop)",
       dataGovHkTitle: "DATA.GOV.HK Open Data Benchmarks Linked",
       dataGovHkDesc: "ArchSD Building Works Tender Price Index (BWTPI)",
+      demoFocus: "Demo variation — end-to-end pipeline",
+      metricFairValue: "Fair value",
+      metricInflation: "Inflation flagged",
+      metricPayable: "Payable (milestone)",
+      pipelineTitle: "Cascade workflow — click a step to continue",
+      colFairValue: "Fair value (HK$)",
+      viewGraphBtn: "Open knowledge graph →",
     },
     impactTrace: {
       title: "Contract Impact Trace (Knowledge Graph)",
@@ -280,20 +345,28 @@ export const translations: Record<Language, Translations> = {
       cap652Notice: "Recommendation: Issue deduction notice within the Cap. 652 30-day response timeframe.",
     },
     asBuilt: {
-      title: "As-Built Verification (CV Module)",
-      sub: "Lobby Floor Area Completeness Inspection",
+      title: "As-Built Verification & Milestone Certification",
+      sub: "Lobby floor finishes — V-2026-017",
       generateReportBtn: "Generate Cited Report",
-      photoFeed: "Site Photo Inspection Feed",
+      photoFeed: "Site evidence gallery",
       capturedTime: "Captured: 28 Jul 2026 10:15 AM",
-      maskTag: "Segment: Lobby Screed & Floor Tiling (60% Verified)",
-      classifierTitle: "Completeness Classifier",
-      classifierSub: "YOLOv8 + SAM boundary segmentation",
-      preComplete: "Pre-Complete",
+      maskTag: "Photos support milestone sign-off; m² from Drawing A-201 takeoff.",
+      classifierTitle: "Completeness review",
+      classifierSub: "Bounded element taxonomy — cited to Spec, BQ & drawings",
+      preComplete: "Weighted complete",
       completedSub: "Completed (Sub-base & Screed)",
       inProgressSub: "In Progress (Adhesive laying)",
       notStartedSub: "Not Started (Skirting & Grouting)",
-      confidence: "AI Model Confidence",
+      confidence: "Reviewer confidence",
       deltaNote: "Delta Valued: 40% of the area is payable only upon final edge skirting installation.",
+      evidenceCaption: "Evidence for audit trail only — quantities from drawing takeoff, not photo tracing.",
+      milestoneTitle: "Element milestones",
+      payableTitle: "Cap. 652 — Milestone certification",
+      withheldTitle: "Withheld pending completion",
+      drawingLink: "Quantity source",
+      statusVerified: "Verified",
+      statusProgress: "In progress",
+      statusNotStarted: "Not started",
     },
     report: {
       title: "Cited Valuation Report",
@@ -312,6 +385,49 @@ export const translations: Record<Language, Translations> = {
       auditTrailTitle: "References (Audit Trail)",
       conclusionTitle: "Conclusion",
       conclusionText: "Based on the analysis and evidence, $7,500 is payable for Variation V-2026-017. All values are benchmarked to HKSMM4 and verified with site evidence. A deduction of $5,920 has been recommended against the contractor's overstated unit rates and unverified quantities.",
+      issuedLabel: "Issued",
+      preparedLabel: "Prepared by",
+      integrityLabel: "Document integrity",
+      cap652Title: "Payment legislation",
+      methodologyTitle: "Cascade methodology trail",
+      citationRegisterTitle: "Citation register",
+      colCitationId: "ID",
+      colCategory: "Category",
+      colSource: "Source",
+      colReference: "Reference & excerpt",
+      colSupports: "Supports",
+      valuationLinesTitle: "Fair value build-up",
+      deductionsTitle: "Recommended deductions",
+      claimVsFair: "Contractor claim",
+      varianceLabel: "variance",
+      signoffPrepared: "Prepared for issue",
+      signoffReviewer: "Reviewer (QS)",
+      packLabel: "Claims Evidence Pack · Cap. 652 payment response annex",
+      responseDue: "Response due",
+      daysLeft: "Days left",
+      disputedLabel: "Disputed",
+      withheldLabel: "Withheld",
+      provabilityTitle: "Change provability",
+      workflowTitle: "Variation workflow trail",
+      certMathTitle: "Milestone certification math",
+      evidenceThreadTitle: "Ordered evidence thread",
+      claimAnnexTitle: "Claim dispute annex (GCC Clause 62)",
+      subtotalLabel: "Sub-total",
+      colElement: "Element",
+      colStatus: "Status",
+      colProgress: "Progress",
+      colWeight: "Weight",
+      colCitation: "Citation",
+      colItem: "Item",
+      colClaim: "Claim",
+      colFair: "Fair",
+      colVariance: "Variance",
+      colFlag: "Flag",
+      colReason: "Reason",
+      totalLabel: "Total",
+      inflationLabel: "inflation",
+      paymentResponseLabel: "Recommended payment response",
+      builtOnLabel: "Built on",
     },
   },
 
@@ -364,6 +480,13 @@ export const translations: Record<Language, Translations> = {
       indirect2hop: "三級隱性項 (3-hop)",
       dataGovHkTitle: "DATA.GOV.HK 政府開放數據實時基準對接",
       dataGovHkDesc: "建築署建築工程招標價格指數 (BWTPI)",
+      demoFocus: "演示工程變更 — 全流程",
+      metricFairValue: "合理估值",
+      metricInflation: "已標記虛高",
+      metricPayable: "本期可付",
+      pipelineTitle: "Cascade 流程 — 點擊步驟繼續",
+      colFairValue: "合理估值 (HK$)",
+      viewGraphBtn: "開啟知識圖譜 →",
     },
     impactTrace: {
       title: "合約影響關聯圖譜 (Knowledge Graph)",
@@ -438,20 +561,28 @@ export const translations: Record<Language, Translations> = {
       cap652Notice: "處置建議：須在香港法例第 652 章規定的 30 天回應期內發出正式扣減通知書。",
     },
     asBuilt: {
-      title: "現場實體完工核實 (電腦視覺模組)",
-      sub: "大堂地面鋪裝完工度實地影像解析",
+      title: "現場完工核實及里程碑簽批",
+      sub: "大堂地面裝修 — V-2026-017",
       generateReportBtn: "生成法定審裁報告",
-      photoFeed: "現場攝像頭/監理影像實時數據流",
+      photoFeed: "工地證據相簿",
       capturedTime: "拍攝時間: 2026年7月28日 10:15",
-      maskTag: "識別區域：大堂水泥砂漿基底及瓷磚鋪設 (已核實 60%)",
-      classifierTitle: "完工進度智能分類器",
-      classifierSub: "YOLOv8 + SAM 邊界高精度語義分割",
-      preComplete: "前期已完工",
+      maskTag: "影像僅作里程碑佐證；工程量來自圖紙 A-201。",
+      classifierTitle: "完工度審核",
+      classifierSub: "限定構件分類 — 對照規範、BQ 及圖紙引用",
+      preComplete: "加權完工率",
       completedSub: "已驗收完成 (地面基底及找平層)",
       inProgressSub: "施工中 (瓷磚膠泥刮抹鋪設)",
       notStartedSub: "未開工 (踢腳線安裝及填縫保護)",
-      confidence: "AI 模型置信度",
+      confidence: "審核置信度",
       deltaNote: "節點估值提示：剩餘 40% 款項須待邊緣踢腳線安裝及驗收合格後方可核准支付。",
+      evidenceCaption: "證據用於審計追溯 — 面積算量取自圖紙，非相片描邊。",
+      milestoneTitle: "分項里程碑",
+      payableTitle: "第 652 章 — 里程碑付款核證",
+      withheldTitle: "待完工暂扣",
+      drawingLink: "工程量來源",
+      statusVerified: "已核實",
+      statusProgress: "進行中",
+      statusNotStarted: "未開始",
     },
     report: {
       title: "具法據引用的工料估值報告",
@@ -470,6 +601,49 @@ export const translations: Record<Language, Translations> = {
       auditTrailTitle: "審計追溯與條款引用 (Audit Trail)",
       conclusionTitle: "審裁結論",
       conclusionText: "基於神經符號合約圖譜與現場實景電腦視覺證據，工程變更 V-2026-017 當前階段建議核准支付金額為 HK$7,500。所有分項單價均嚴格對標 HKSMM4 標準。針對承建商虛報的單價與超額工程量，建議正式駁回並扣減 HK$5,920。",
+      issuedLabel: "簽發日期",
+      preparedLabel: "編制",
+      integrityLabel: "文件完整性",
+      cap652Title: "付款法例",
+      methodologyTitle: "Cascade 方法論追溯",
+      citationRegisterTitle: "引用登記冊",
+      colCitationId: "編號",
+      colCategory: "類別",
+      colSource: "來源",
+      colReference: "條款及摘要",
+      colSupports: "支持結論",
+      valuationLinesTitle: "合理估值明細",
+      deductionsTitle: "建議扣減",
+      claimVsFair: "承建商申索",
+      varianceLabel: "差額",
+      signoffPrepared: "編制簽署",
+      signoffReviewer: "審核 (QS)",
+      packLabel: "申索證據包 · 第652章付款回應附件",
+      responseDue: "回應期限",
+      daysLeft: "剩餘日數",
+      disputedLabel: "爭議金額",
+      withheldLabel: "暫扣",
+      provabilityTitle: "變更可證明度",
+      workflowTitle: "工程變更流程追溯",
+      certMathTitle: "里程碑核證計算",
+      evidenceThreadTitle: "有序證據鏈",
+      claimAnnexTitle: "申索爭議附表 (GCC 第62條)",
+      subtotalLabel: "小計",
+      colElement: "工程元素",
+      colStatus: "狀態",
+      colProgress: "進度",
+      colWeight: "權重",
+      colCitation: "引用",
+      colItem: "項目",
+      colClaim: "申索",
+      colFair: "合理價",
+      colVariance: "差額",
+      colFlag: "標記",
+      colReason: "理由",
+      totalLabel: "合計",
+      inflationLabel: "虛高",
+      paymentResponseLabel: "建議付款回應",
+      builtOnLabel: "建基於",
     },
   },
 
@@ -522,6 +696,13 @@ export const translations: Record<Language, Translations> = {
       indirect2hop: "三级隐性项 (3-hop)",
       dataGovHkTitle: "DATA.GOV.HK 政府开放数据实时基准对接",
       dataGovHkDesc: "建筑署工程招标价格指数 (BWTPI)",
+      demoFocus: "演示工程变更 — 全流程",
+      metricFairValue: "合理估值",
+      metricInflation: "已标记虚高",
+      metricPayable: "本期可付",
+      pipelineTitle: "Cascade 流程 — 点击步骤继续",
+      colFairValue: "合理估值 (HK$)",
+      viewGraphBtn: "开启知识图谱 →",
     },
     impactTrace: {
       title: "合同影响关联图谱 (Knowledge Graph)",
@@ -596,20 +777,28 @@ export const translations: Record<Language, Translations> = {
       cap652Notice: "处置建议：须在香港法例第 652 章规定的 30 天答复期内签发正式扣减通知书。",
     },
     asBuilt: {
-      title: "现场实体完工核查 (计算机视觉模块)",
-      sub: "门厅地面铺贴完工度实景图像解析",
+      title: "现场完工核查及里程碑签批",
+      sub: "门厅地面装修 — V-2026-017",
       generateReportBtn: "生成法定裁决报告",
-      photoFeed: "现场摄像头/监理图像实时数据流",
+      photoFeed: "工地证据相册",
       capturedTime: "拍摄时间: 2026年7月28日 10:15",
-      maskTag: "识别区域：门厅水泥砂浆基层及地面铺贴 (已核查 60%)",
-      classifierTitle: "完工进度智能分类器",
-      classifierSub: "YOLOv8 + SAM 边界高精度语义分割",
-      preComplete: "前期已完工",
+      maskTag: "影像仅作里程碑佐证；工程量来自图纸 A-201。",
+      classifierTitle: "完工度审核",
+      classifierSub: "限定构件分类 — 对照规范、BQ 及图纸引用",
+      preComplete: "加权完工率",
       completedSub: "已验收完成 (地面垫层及找平层)",
       inProgressSub: "施工中 (粘结剂涂刷及瓷砖试铺)",
       notStartedSub: "未开工 (踢脚线安装及勾缝防护)",
-      confidence: "AI 模型置信度",
+      confidence: "审核置信度",
       deltaNote: "节点估值提示：剩余 40% 款项须待边缘踢脚线安装及验收合格后方可核准支付。",
+      evidenceCaption: "证据用于审计追溯 — 面积算量取自图纸，非照片描边。",
+      milestoneTitle: "分项里程碑",
+      payableTitle: "第 652 章 — 里程碑付款核证",
+      withheldTitle: "待完工暂扣",
+      drawingLink: "工程量来源",
+      statusVerified: "已核实",
+      statusProgress: "进行中",
+      statusNotStarted: "未开始",
     },
     report: {
       title: "具法规引用的工程造价估值报告",
@@ -628,6 +817,49 @@ export const translations: Record<Language, Translations> = {
       auditTrailTitle: "审计追溯与条款引用 (Audit Trail)",
       conclusionTitle: "裁决结论",
       conclusionText: "基于神经符号合同知识图谱与现场实景计算机视觉证据，工程变更 V-2026-017 当前阶段建议核准支付金额为 HK$7,500。所有细项单价均严格对标 HKSMM4 标准。针对施工方虚报的综合单价与超额工程量，建议正式驳回并核减 HK$5,920。",
+      issuedLabel: "签发日期",
+      preparedLabel: "编制",
+      integrityLabel: "文件完整性",
+      cap652Title: "付款法规",
+      methodologyTitle: "Cascade 方法论追溯",
+      citationRegisterTitle: "引用登记册",
+      colCitationId: "编号",
+      colCategory: "类别",
+      colSource: "来源",
+      colReference: "条款及摘要",
+      colSupports: "支持结论",
+      valuationLinesTitle: "合理估值明细",
+      deductionsTitle: "建议核减",
+      claimVsFair: "施工方索赔",
+      varianceLabel: "差额",
+      signoffPrepared: "编制签署",
+      signoffReviewer: "审核 (QS)",
+      packLabel: "索赔证据包 · 第652章付款回应附件",
+      responseDue: "回应期限",
+      daysLeft: "剩余天数",
+      disputedLabel: "争议金额",
+      withheldLabel: "暂扣",
+      provabilityTitle: "变更可证明度",
+      workflowTitle: "工程变更流程追溯",
+      certMathTitle: "里程碑核证计算",
+      evidenceThreadTitle: "有序证据链",
+      claimAnnexTitle: "索赔争议附表 (GCC 第62条)",
+      subtotalLabel: "小计",
+      colElement: "工程元素",
+      colStatus: "状态",
+      colProgress: "进度",
+      colWeight: "权重",
+      colCitation: "引用",
+      colItem: "项目",
+      colClaim: "索赔",
+      colFair: "合理价",
+      colVariance: "差额",
+      colFlag: "标记",
+      colReason: "理由",
+      totalLabel: "合计",
+      inflationLabel: "虚高",
+      paymentResponseLabel: "建议付款回应",
+      builtOnLabel: "建基于",
     },
   },
 };

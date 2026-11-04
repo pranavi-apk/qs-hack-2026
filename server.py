@@ -1,11 +1,15 @@
 import os
 import json
 import requests
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from dotenv import load_dotenv
+
+from cv_measure import enrich_cv_module
+from graph_store import get_impact_graph
+from evidence_pack import assemble_evidence_pack
 
 load_dotenv()
 
@@ -97,8 +101,129 @@ VARIATION_DATA = {
             "not_started": 10
         },
         "ai_confidence": 92,
-        "delta_valued": "40% of the area is payable upon final grouting & edge protection inspection.",
-        "image_url": "https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=1200&q=80"
+        "delta_valued": "40% of scope remains payable only after skirting, grouting and edge protection pass final inspection (HKSMM4 §6.2.3).",
+        "image_src": "/lobby_evidence.jpg",
+        "drawing_ref": "A-201",
+        "reference_area_sqm": 120.0,
+        "world_width_m": 12.0,
+        "world_depth_m": 10.0,
+        "calibration_method": "drawing_takeoff_a201",
+        "drawing_takeoff": {
+            "tool": "deterministic_grid",
+            "pdf_takeoff_when_available": "pdf2takeoff",
+            "lobby_grid_m": "12.0 × 10.0",
+            "tile_scope_sqm": 120.0,
+            "note": "Tile quantity from Drawing A-201; site photos support milestone sign-off only.",
+        },
+        "evidence_chain": {
+            "primary_photo": "IMG_20260728_1045.jpg",
+            "captured_at": "28 Jul 2026 10:15 AM",
+            "captured_by": "Site QS — HA Block 4 (Team Quantum audit)",
+            "linked_drawings": ["A-201", "A-105"],
+            "integrity": "SHA-256 e4b71…9c2f (local vault)"
+        },
+        "gallery": [
+            {"id": "cam1", "label": "Lobby finishes — general view", "src": "/lobby_evidence.jpg"},
+            {"id": "cam2", "label": "Floor screed inspection", "src": "/construction_screed.jpg"},
+            {"id": "cam3", "label": "Tiling progress milestone", "src": "/construction_tiling.jpg"}
+        ],
+        "milestones": [
+            {
+                "id": "screed",
+                "element": "Floor sub-base & screed",
+                "taxonomy": "Finishes / Floor — Spec 23 40 00",
+                "status": "verified",
+                "progress_pct": 100,
+                "weight_pct": 20,
+                "citation": "SPC 23 40 00 §3.2 · BQ 08-12",
+                "observation": "Screed levels and falls to floor trap verified on site walk-down."
+            },
+            {
+                "id": "tiling",
+                "element": "Homogeneous floor tiles 600×600",
+                "taxonomy": "Finishes / Floor — HKSMM4 §6.2.3",
+                "status": "in_progress",
+                "progress_pct": 60,
+                "weight_pct": 45,
+                "citation": "Drawing A-201 · IPC Tile work",
+                "observation": "Approximately 60% of lobby tile field laid; adhesive curing in active bays."
+            },
+            {
+                "id": "grout",
+                "element": "Waterproof grout & jointing",
+                "taxonomy": "Finishes / Floor — Approved submittal",
+                "status": "in_progress",
+                "progress_pct": 30,
+                "weight_pct": 20,
+                "citation": "Material submittal MS-FT-2026-044",
+                "observation": "Grouting commenced at completed bays only; not ready for final measure."
+            },
+            {
+                "id": "skirting",
+                "element": "100 mm tile skirting & edge protection",
+                "taxonomy": "Finishes / Floor edge — Drawing A-105",
+                "status": "not_started",
+                "progress_pct": 0,
+                "weight_pct": 15,
+                "citation": "Drawing A-105 detail 3 · GCC cl. 14",
+                "observation": "Perimeter skirting not commenced — withhold milestone payment on this element."
+            }
+        ],
+        "certification": {
+            "weighted_completeness_pct": 60,
+            "fair_value_total_hkd": 18750,
+            "payable_milestone_hkd": 7500,
+            "withheld_pending_hkd": 11250,
+            "cap652_window": "Issue payment certificate or written response within 30 days — Cap. 652",
+            "certifier_note": "Cascade certifies 60% weighted completeness on lobby finishes. Pay HK$7,500 against fair value HK$18,750; balance withheld pending skirting and final grouting sign-off."
+        },
+        "footprint_norm": [
+            {"x": 0.10, "y": 0.93},
+            {"x": 0.90, "y": 0.93},
+            {"x": 0.74, "y": 0.56},
+            {"x": 0.26, "y": 0.56}
+        ],
+        "segments": [
+            {
+                "id": "completed",
+                "label": "Floor screed & tiling (verified)",
+                "category": "completed",
+                "confidence": 0.92,
+                "color": "#2D6A4F",
+                "points_norm": [
+                    {"x": 0.16, "y": 0.88},
+                    {"x": 0.84, "y": 0.88},
+                    {"x": 0.70, "y": 0.66},
+                    {"x": 0.30, "y": 0.66}
+                ]
+            },
+            {
+                "id": "in_progress",
+                "label": "Tile adhesive & laying (active)",
+                "category": "in_progress",
+                "confidence": 0.89,
+                "color": "#D97706",
+                "points_norm": [
+                    {"x": 0.30, "y": 0.66},
+                    {"x": 0.70, "y": 0.66},
+                    {"x": 0.74, "y": 0.56},
+                    {"x": 0.26, "y": 0.56}
+                ]
+            },
+            {
+                "id": "not_started",
+                "label": "Skirting & edge protection",
+                "category": "not_started",
+                "confidence": 0.86,
+                "color": "#64748B",
+                "points_norm": [
+                    {"x": 0.10, "y": 0.93},
+                    {"x": 0.90, "y": 0.93},
+                    {"x": 0.84, "y": 0.88},
+                    {"x": 0.16, "y": 0.88}
+                ]
+            }
+        ]
     },
     "cited_report": {
         "variation_id": "V-2026-017",
@@ -118,7 +243,111 @@ VARIATION_DATA = {
             { "label": "Site Photo", "ref": "IMG_20260728_1045.jpg" },
             { "label": "Rate Source", "ref": "HKSMM4 (2024) Section 6.2.3" }
         ],
-        "conclusion": "Based on the neuro-symbolic analysis and computer vision evidence, $7,500 is payable for Variation V-2026-017 under current milestone progress. All rates are strictly benchmarked to HKSMM4 and verified with site photos. $5,920 of contractor inflation has been flagged for rejection."
+        "conclusion": "Based on the neuro-symbolic analysis and milestone evidence, HK$7,500 is payable for Variation V-2026-017 at the current certification stage. Fair value HK$18,750 is benchmarked to HKSMM4 (2024) and ArchSD indices. HK$5,920 of contractor inflation is recommended for deduction under GCC Clause 62, consistent with Cap. 652 payment response obligations.",
+        "metadata": {
+            "report_id": "RPT-V-2026-017-001",
+            "issued_date": "28 Jul 2026",
+            "prepared_by": "Team Quantum — Cascade Decision Support",
+            "reviewer_role": "QS Senior Analyst (demo)",
+            "document_hash": "SHA-256: c4e291a8…7f02",
+            "cap652_reference": "Cap. 652 — Security of Payment Ordinance (30-day response)"
+        },
+        "methodology": [
+            {
+                "step": 1,
+                "module": "Impact Trace",
+                "engine": "Knowledge graph (Neo4j ontology)",
+                "citation": "BQ 08-12 · Drawings A-201/A-105 · GCC",
+                "outcome": "263 affected items traced (48 direct / 126+89 indirect)"
+            },
+            {
+                "step": 2,
+                "module": "Fair Value",
+                "engine": "Deterministic HKSMM4 calculator",
+                "citation": "HKSMM4 (2024) §6.2.3 · ArchSD SOR · DATA.GOV.HK BWTPI",
+                "outcome": "Fair value HK$18,750 (rounded)"
+            },
+            {
+                "step": 3,
+                "module": "Claim Check",
+                "engine": "Line-by-line adjudication",
+                "citation": "GCC Clause 62 · Contractor VO submission",
+                "outcome": "HK$5,920 inflation flagged (26.3%)"
+            },
+            {
+                "step": 4,
+                "module": "As-Built Verify",
+                "engine": "Milestone taxonomy + site evidence",
+                "citation": "Spec SPC 23 40 00 · IMG_20260728_1045.jpg",
+                "outcome": "60% weighted completeness → payable delta HK$7,500"
+            }
+        ],
+        "citations": [
+            {
+                "id": "C-01",
+                "category": "Measurement",
+                "source": "HKSMM4 (2024 Edition)",
+                "reference": "Section 6.2.3 — Floor tiling",
+                "excerpt": "Measured net area of finished tile surface; adhesive and grout measured separately per schedule.",
+                "supports": "Tile qty 120 m² · adhesive 18 bags"
+            },
+            {
+                "id": "C-02",
+                "category": "Drawing",
+                "source": "Architectural Drawing",
+                "reference": "A-201, A-105",
+                "excerpt": "Lobby extension grid 12.0 m × 10.0 m; skirting detail on A-105.",
+                "supports": "Drawing takeoff quantity"
+            },
+            {
+                "id": "C-03",
+                "category": "Contract",
+                "source": "GCC / HAGCC",
+                "reference": "Clause 62 — Variation valuation",
+                "excerpt": "Variations valued at fair rates; employer entitled to reject unsubstantiated portions of contractor claims.",
+                "supports": "Deduction recommendation HK$5,920"
+            },
+            {
+                "id": "C-04",
+                "category": "Specification",
+                "source": "Employer's Specification",
+                "reference": "SPC 23 40 00",
+                "excerpt": "Homogeneous floor tile 600×600; polymer adhesive and waterproof grout per approved submittal.",
+                "supports": "Finishes scope & milestone checklist"
+            },
+            {
+                "id": "C-05",
+                "category": "Evidence",
+                "source": "Site record",
+                "reference": "IMG_20260728_1045.jpg",
+                "excerpt": "Site evidence gallery — milestone sign-off only; not used for m² takeoff.",
+                "supports": "60% completeness certification"
+            },
+            {
+                "id": "C-06",
+                "category": "Legislation",
+                "source": "Cap. 652",
+                "reference": "Payment response timeframe",
+                "excerpt": "Payment schedule / adjudication response within prescribed period.",
+                "supports": "Certification impact statement"
+            }
+        ],
+        "valuation_lines": [
+            {"item": "Tiles 600×600", "qty": "120 m²", "rate": 128.00, "amount": 15360.00, "citation_id": "C-01"},
+            {"item": "Tile adhesive", "qty": "18 bags", "rate": 28.00, "amount": 504.00, "citation_id": "C-01"},
+            {"item": "Grout", "qty": "10 bags", "rate": 15.00, "amount": 150.00, "citation_id": "C-04"},
+            {"item": "Skirting", "qty": "48 m", "rate": 12.00, "amount": 576.00, "citation_id": "C-02"}
+        ],
+        "valuation_adjustments": {
+            "description": "Prelim, OH&P (13%)",
+            "amount": 2157.00
+        },
+        "valuation_subtotal": 16590.00,
+        "deductions": [
+            {"item": "Tiles — rate variance", "amount": 5040.00, "citation_id": "C-03"},
+            {"item": "Adhesive — excess qty", "amount": 396.00, "citation_id": "C-03"},
+            {"item": "Grout / skirting", "amount": 484.00, "citation_id": "C-03"}
+        ]
     }
 }
 
@@ -223,6 +452,100 @@ def analyze_with_ai(req: PromptRequest):
             "error": str(e),
             "analysis": "Deterministic HKSMM4 evaluation applied: All rates benchmarked to ArchSD Schedule of Rates."
         }
+
+@app.get("/api/graph/{variation_id}")
+def get_knowledge_graph(variation_id: str):
+    """Contract impact graph (Neo4j when configured; isomorphic fallback for demo)."""
+    detail = get_variation_detail(variation_id)
+    return get_impact_graph(detail)
+
+
+@app.get("/api/cv/module/{variation_id}")
+def get_cv_module(variation_id: str):
+    """As-built masks on site photo, m² from OpenCV homography to Drawing A-201 floor grid (local)."""
+    detail = get_variation_detail(variation_id)
+    raw = detail.get("cv_module", VARIATION_DATA["cv_module"])
+    return enrich_cv_module(raw)
+
+
+@app.get("/api/drawing/takeoff/{variation_id}")
+def get_drawing_takeoff(variation_id: str):
+    """Deterministic drawing quantities for Fair Value (A-201); swap in pdf2takeoff when PDF samples arrive."""
+    detail = get_variation_detail(variation_id)
+    cv = enrich_cv_module(detail.get("cv_module", VARIATION_DATA["cv_module"]))
+    fv = detail.get("fair_value_calculation", VARIATION_DATA["fair_value_calculation"])
+    tile = next((i for i in fv["items"] if "Tile" in i["item"]), fv["items"][0])
+    return {
+        "variation_id": variation_id,
+        "drawing_ref": cv.get("drawing_ref", "A-201"),
+        "lobby_footprint_m": {
+            "width": cv.get("world_width_m", 12.0),
+            "depth": cv.get("world_depth_m", 10.0),
+        },
+        "tile_area_sqm": cv.get("reference_area_sqm", tile["qty"]),
+        "hksmm4_line": tile,
+        "measurement_stack": cv.get("drawing_takeoff"),
+        "cv_completed_sqm": next(
+            (s["area_sqm"] for s in cv.get("segments", []) if s.get("id") == "completed"),
+            None,
+        ),
+    }
+
+
+@app.get("/api/report/{variation_id}")
+def get_cited_report(variation_id: str):
+    """Export-ready cited valuation + Claims Evidence pack (OCE-inspired, HK-scoped)."""
+    detail = get_variation_detail(variation_id)
+    report = dict(detail.get("cited_report", VARIATION_DATA["cited_report"]))
+    fv = detail.get("fair_value_calculation", VARIATION_DATA["fair_value_calculation"])
+    claim = detail.get("contractor_claim_adjudication", VARIATION_DATA["contractor_claim_adjudication"])
+    pack = assemble_evidence_pack(detail, report)
+    # Keep report metadata hash in sync with assembled pack
+    meta = dict(report.get("metadata") or {})
+    meta["document_hash"] = pack["document_hash"]
+    report["metadata"] = meta
+    return {
+        **report,
+        "variation_id": variation_id,
+        "fair_value_total": fv.get("total_fair_value"),
+        "contractor_claim_total": claim.get("total_claim"),
+        "variance_total": claim.get("total_variance"),
+        "evidence_pack": pack,
+    }
+
+
+@app.get("/api/evidence-pack/{variation_id}")
+def get_evidence_pack(variation_id: str):
+    """Standalone Claims Evidence reconstruct (OpenConstructionERP-pattern port)."""
+    detail = get_variation_detail(variation_id)
+    report = detail.get("cited_report", VARIATION_DATA["cited_report"])
+    return assemble_evidence_pack(detail, report)
+
+
+@app.post("/api/pack/upload")
+async def upload_variation_pack(files: List[UploadFile] = File(...)):
+    """Accept document pack uploads for the demo workspace (files kept in memory only)."""
+    accepted = []
+    for f in files:
+        raw = await f.read()
+        accepted.append(
+            {
+                "id": f.filename or "upload",
+                "name": f.filename or "upload.bin",
+                "category": "Uploaded",
+                "status": "ready",
+                "role": f"Received · {len(raw):,} bytes (demo — not persisted)",
+                "content_type": f.content_type,
+            }
+        )
+    return {
+        "ok": True,
+        "count": len(accepted),
+        "files": accepted,
+        "message": "Pack received. Open Impact → Fair value → Claim → Certify → Evidence pack.",
+        "variation_id": "V-2026-017",
+    }
+
 
 @app.get("/api/gov-data/rates")
 def get_gov_benchmarks():
