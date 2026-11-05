@@ -1,6 +1,6 @@
 # Cascade: Fair Value and Impact Intelligence for Quantity Surveying
 
-> **Team Quantum (B2 - Open Challenge - Student Stream)**
+> **Cascade (B2 - Open Challenge - Student Stream)**
 > An AI-powered decision support platform for Quantity Surveying teams that traces client variations, values impacts strictly under **HKSMM4**, adjudicates contractor claims, verifies as-built progress from site photos, and produces cited, auditable valuation reports.
 
 ---
