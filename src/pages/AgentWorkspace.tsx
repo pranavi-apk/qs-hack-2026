@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import ImpactKnowledgeGraph, { GraphNode, ImpactGraphPayload } from '../components/ImpactKnowledgeGraph';
 import CitedReportPage from './CitedReportPage';
+import FairValuePanel from '../components/FairValuePanel';
+import ClaimCheckPanel from '../components/ClaimCheckPanel';
+import type { VariationDetail } from '../lib/valuation';
 import { translations } from '../i18n';
 import {
   ChatMsg,
@@ -45,7 +48,9 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   const [view, setView] = useState<ViewId>('overview');
   const [phase, setPhase] = useState<'running' | 'ready'>('running');
   const [stepIdx, setStepIdx] = useState(0);
-  const [detail, setDetail] = useState<any>(null);
+  const [detail, setDetail] = useState<VariationDetail | null>(null);
+  const [detailStatus, setDetailStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [detailAttempt, setDetailAttempt] = useState(0);
   const [cv, setCv] = useState<any>(null);
   const [graph, setGraph] = useState<ImpactGraphPayload | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
@@ -53,6 +58,7 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   const [draft, setDraft] = useState('');
   const [sidecarOpen, setSidecarOpen] = useState(true);
   const endRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const t = translations.en;
 
   const fairValue = detail?.fair_value_calculation?.total_fair_value ?? 18750;
@@ -75,10 +81,32 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   }, []);
 
   useEffect(() => {
-    fetch('/api/variation/V-2026-017').then((r) => r.json()).then(setDetail).catch(() => null);
     fetch('/api/cv/module/V-2026-017').then((r) => r.json()).then(setCv).catch(() => null);
     fetch('/api/graph/V-2026-017').then((r) => r.json()).then(setGraph).catch(() => null);
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setDetailStatus('loading');
+    fetch('/api/variation/V-2026-017', { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error('Unable to load variation');
+        return response.json();
+      })
+      .then((data: VariationDetail) => {
+        if (!Array.isArray(data.fair_value_calculation?.items)
+          || !Array.isArray(data.contractor_claim_adjudication?.items)) {
+          throw new Error('Incomplete variation data');
+        }
+        if (controller.signal.aborted) return;
+        setDetail(data);
+        setDetailStatus('ready');
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setDetailStatus('error');
+      });
+    return () => controller.abort();
+  }, [detailAttempt]);
 
   useEffect(() => {
     if (phase !== 'ready') return;
@@ -107,6 +135,10 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, phase]);
+
+  useEffect(() => {
+    if (panelRef.current) panelRef.current.scrollTop = 0;
+  }, [view, phase]);
 
   const ask = (text: string) => {
     const trimmed = text.trim();
@@ -147,7 +179,7 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   const docNames = files.length ? files.map((f) => f.name) : sampleDocs;
 
   return (
-    <div className="agent agent-chat-layout" style={{ height: '100vh' }}>
+    <div className={`agent agent-chat-layout ${view === 'value' || view === 'claim' ? 'agent-finance-workspace' : ''}`} style={{ height: '100vh' }}>
       <div className="agent-stage-wrapper">
         <div className="agent-stage" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {phase === 'running' ?
@@ -179,10 +211,11 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
                         key={item.id}
                         type="button"
                         className={`sidebar-nav-item ${view === item.id ? 'active' : ''}`}
+                        aria-current={view === item.id ? 'page' : undefined}
                         onClick={() => setView(item.id)}
                       >
                         {item.icon}
-                        {item.label}
+                        <span>{item.label}</span>
                       </button>
                     ))}
                   </nav>
@@ -196,12 +229,13 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
                   <button
                     type="button"
                     className={`btn-toggle-copilot ${sidecarOpen ? 'active' : ''}`}
+                    aria-pressed={sidecarOpen}
                     onClick={() => setSidecarOpen((v) => !v)}
                   >
                     Copilot
                   </button>
                 </div>
-                <div className="agent-panel-body">
+                <div className="agent-panel-body" ref={panelRef}>
                   {view === 'overview' && (
                     <div>
                       <h2 style={{ fontFamily: 'Outfit, Plus Jakarta Sans, sans-serif', marginBottom: 8 }}>
@@ -283,59 +317,25 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
                     </div>
                   )}
 
-                  {view === 'value' && (
-                    <div>
-                      <h2 style={{ marginTop: 0 }}>HKSMM4 fair value</h2>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                        <thead>
-                          <tr style={{ textAlign: 'left', color: '#6b645b', fontSize: 11 }}>
-                            <th style={{ padding: 8 }}>Item</th>
-                            <th style={{ padding: 8 }}>Qty</th>
-                            <th style={{ padding: 8, textAlign: 'right' }}>Rate</th>
-                            <th style={{ padding: 8, textAlign: 'right' }}>Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(fv?.items ?? []).map((row: any) => (
-                            <tr key={row.item} style={{ borderTop: '1px solid #efe8da' }}>
-                              <td style={{ padding: 8, fontWeight: 600 }}>{row.item}</td>
-                              <td style={{ padding: 8 }}>
-                                {row.qty} {row.unit}
-                              </td>
-                              <td style={{ padding: 8, textAlign: 'right' }}>{fmt(row.rate)}</td>
-                              <td style={{ padding: 8, textAlign: 'right' }}>{fmt(row.amount)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <p style={{ marginTop: 16, fontWeight: 700 }}>
-                        Fair value HK$ {fmt(fairValue)}
-                      </p>
-                    </div>
+                  {(view === 'value' || view === 'claim') && detailStatus !== 'ready' && (
+                    <section className="valuation-data-state" aria-live="polite" aria-busy={detailStatus === 'loading'}>
+                      {detailStatus === 'loading' ? <>
+                        <div className="valuation-loading-mark" aria-hidden="true" />
+                        <h2>Loading {view === 'value' ? 'fair value' : 'claim assessment'}…</h2>
+                        <p>Retrieving the variation’s line items and references.</p>
+                      </> : <div role="alert">
+                        <FileText size={28} aria-hidden="true" />
+                        <h2>Unable to load the variation</h2>
+                        <p>Check that the backend is running, then try again.</p>
+                        <button type="button" className="valuation-primary-button" onClick={() => setDetailAttempt((attempt) => attempt + 1)}>Try again</button>
+                      </div>}
+                    </section>
                   )}
-
-                  {view === 'claim' && (
-                    <div>
-                      <h2 style={{ marginTop: 0 }}>Claim check</h2>
-                      <p style={{ color: '#dc2626', fontWeight: 600 }}>
-                        Inflation HK$ {fmt(inflation)} ({claim?.inflated_percentage ?? 26.3}%)
-                      </p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-                        {(claim?.items ?? []).map((row: any) => (
-                          <div key={row.item} className="doc-file-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="doc-file-details">
-                              <strong>
-                                {row.item} · {row.flag}
-                              </strong>
-                              <span style={{ fontSize: 12, color: '#787062' }}>
-                                Claim {fmt(row.claim_amount)} vs fair {fmt(row.cascade_fair)} · Δ {fmt(row.variance)}
-                              </span>
-                              <span style={{ fontSize: 12, marginTop: 4 }}>{row.reason}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                  {view === 'value' && detailStatus === 'ready' && detail && fv && (
+                    <FairValuePanel data={fv} variationId={detail.id} onClaimCheck={() => setView('claim')} />
+                  )}
+                  {view === 'claim' && detailStatus === 'ready' && detail && fv && claim && (
+                    <ClaimCheckPanel data={claim} fairValue={fv} variationId={detail.id} onFairValue={() => setView('value')} onEvidencePack={() => setView('report')} />
                   )}
 
                   {view === 'certify' && (
