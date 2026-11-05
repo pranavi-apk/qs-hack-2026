@@ -10,7 +10,8 @@ import {
   Shield,
   Calculator,
 } from 'lucide-react';
-import ImpactKnowledgeGraph, { GraphNode, ImpactGraphPayload } from '../components/ImpactKnowledgeGraph';
+import ImpactTracePanel from '../components/ImpactTracePanel';
+import type { ImpactGraphPayload } from '../components/ImpactKnowledgeGraph';
 import CitedReportPage from './CitedReportPage';
 import FairValuePanel from '../components/FairValuePanel';
 import ClaimCheckPanel from '../components/ClaimCheckPanel';
@@ -53,7 +54,6 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   const [detailAttempt, setDetailAttempt] = useState(0);
   const [cv, setCv] = useState<any>(null);
   const [graph, setGraph] = useState<ImpactGraphPayload | null>(null);
-  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState('');
   const [sidecarOpen, setSidecarOpen] = useState(true);
@@ -304,17 +304,9 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
                   )}
 
                   {view === 'impact' && (
-                    <div style={{ minHeight: 480 }}>
-                      <h2 style={{ marginTop: 0 }}>Impact graph</h2>
-                      {graph ?
-                        <ImpactKnowledgeGraph
-                          data={graph}
-                          lang="en"
-                          selectedId={selectedNode?.id ?? null}
-                          onSelectNode={setSelectedNode}
-                        />
-                      : <div className="metric">Loading graph…</div>}
-                    </div>
+                    graph ?
+                      <ImpactTracePanel data={graph} />
+                    : <div className="metric">Loading graph…</div>
                   )}
 
                   {(view === 'value' || view === 'claim') && detailStatus !== 'ready' && (

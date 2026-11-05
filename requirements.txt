@@ -2,6 +2,7 @@ opencv-python-headless>=4.8
 numpy>=1.26
 fastapi
 uvicorn
+python-multipart
 python-dotenv
 requests
 pydantic

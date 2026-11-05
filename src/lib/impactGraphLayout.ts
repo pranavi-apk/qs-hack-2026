@@ -12,8 +12,8 @@ export function layoutImpactGraph(
 ): { nodes: LayoutNode[]; links: GraphLink[] } {
   const cx = width / 2;
   const cy = height / 2;
-  const pad = 56;
-  const orbit = Math.min(width, height) / 2 - pad - 40;
+  const pad = 78;
+  const orbit = Math.min(width, height) / 2 - pad - 28;
 
   const center = nodes.find((n) => n.type === 'variation');
   const clusters = nodes.filter((n) => n.type === 'cluster');
@@ -26,7 +26,7 @@ export function layoutImpactGraph(
       ...center,
       x: cx,
       y: cy,
-      r: 52,
+      r: 46,
     });
   }
 
@@ -36,7 +36,7 @@ export function layoutImpactGraph(
       ...c,
       x: cx + Math.cos(angle) * orbit,
       y: cy + Math.sin(angle) * orbit,
-      r: 38,
+      r: 28,
     });
   });
 

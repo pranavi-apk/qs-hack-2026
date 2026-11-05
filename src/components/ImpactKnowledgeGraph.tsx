@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Database, GitBranch } from 'lucide-react';
-import { anchorEdge, layoutImpactGraph } from '../lib/impactGraphLayout';
+import { anchorEdge, layoutImpactGraph, type LayoutNode } from '../lib/impactGraphLayout';
 
 export type GraphNode = {
   id: string;
@@ -40,6 +40,30 @@ const LINK_STROKE: Record<string, { color: string; width: number; dash?: string 
   indirect_2hop: { color: '#B45309', width: 1.8, dash: '7 5' },
   indirect_3hop: { color: '#94A3B8', width: 1.4, dash: '2 5' },
 };
+
+function ClusterLabel({ node, cx, cy, text }: { node: LayoutNode; cx: number; cy: number; text: string }) {
+  const dx = node.x - cx;
+  const dy = node.y - cy;
+  const len = Math.hypot(dx, dy) || 1;
+  const x = node.x + (dx / len) * (node.r + 12);
+  const y = node.y + (dy / len) * (node.r + 4);
+  const anchor = Math.abs(dx) < 36 ? 'middle' : dx > 0 ? 'start' : 'end';
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor={anchor}
+      fill="#1c1915"
+      fontSize={12}
+      fontWeight={650}
+      stroke="#F5F2E9"
+      strokeWidth={4}
+      paintOrder="stroke"
+    >
+      {text}
+    </text>
+  );
+}
 
 type Props = {
   data: ImpactGraphPayload;
@@ -81,14 +105,14 @@ export default function ImpactKnowledgeGraph({ data, lang, onSelectNode, selecte
         'Neo4j 即時圖譜'
       : 'Neo4j 实时图谱'
     : lang === 'en' ?
-      'Neo4j ontology (demo store)'
+      'Sample contract graph'
     : lang === 'zh-HK' ?
       'Neo4j 本體模型（演示存儲）'
     : 'Neo4j 本体模型（演示存储）';
 
   const cx = dims.w / 2;
   const cy = dims.h / 2;
-  const orbit = Math.min(dims.w, dims.h) / 2 - 96;
+  const orbit = Math.min(dims.w, dims.h) / 2 - 106;
 
   return (
     <div
@@ -119,12 +143,12 @@ export default function ImpactKnowledgeGraph({ data, lang, onSelectNode, selecte
         >
           {showLeaves ?
             lang === 'en' ?
-              'Hide BQ items'
+              'Hide sample lines'
             : lang === 'zh-HK' ?
               '隱藏 BQ 項'
             : '隐藏 BQ 项'
           : lang === 'en' ?
-            'Show 2-hop BQ items'
+            'Show sample lines on the graph'
           : lang === 'zh-HK' ?
             '顯示 2-hop BQ 項'
           : '显示 2-hop BQ 项'}
@@ -228,19 +252,10 @@ export default function ImpactKnowledgeGraph({ data, lang, onSelectNode, selecte
               )}
               {node.type === 'cluster' && (
                 <>
-                  <text
-                    x={node.x}
-                    y={node.y - 4}
-                    textAnchor="middle"
-                    fill="#78350f"
-                    fontSize={10}
-                    fontWeight={700}
-                  >
-                    {title.join(' ').length > 16 ? `${title.join(' ').slice(0, 14)}…` : title.join(' ')}
+                  <text x={node.x} y={node.y + 4} textAnchor="middle" fill="#78350f" fontSize={13} fontWeight={700}>
+                    {node.count}
                   </text>
-                  <text x={node.x} y={node.y + 12} textAnchor="middle" fill="#92400e" fontSize={10} fontFamily="monospace">
-                    ({node.count})
-                  </text>
+                  <ClusterLabel node={node} cx={cx} cy={cy} text={title.join(' ').replace(/\s+/g, ' ')} />
                 </>
               )}
               {node.type === 'bq_item' && (
@@ -262,17 +277,17 @@ export default function ImpactKnowledgeGraph({ data, lang, onSelectNode, selecte
       <div className="absolute bottom-3 left-3 z-10 bg-white/95 backdrop-blur px-3 py-2 rounded-xl border border-slate-200 text-[10px] flex flex-wrap gap-3 shadow-sm">
         <span className="flex items-center text-slate-700">
           <span className="w-5 h-0.5 bg-[#1A3D32] mr-1.5 rounded" />
-          {lang === 'en' ? 'AFFECTS (1-hop)' : lang === 'zh-HK' ? 'AFFECTS (1-hop)' : 'AFFECTS (1-hop)'}
+          {lang === 'en' ? 'Direct trade' : 'AFFECTS (1-hop)'}
         </span>
         <span className="flex items-center text-slate-700">
           <span className="w-5 h-0.5 border-b-2 border-dashed border-amber-600 mr-1.5" />
-          IMPLIES (2-hop)
+          {lang === 'en' ? 'Sample line inside that trade' : 'IMPLIES (2-hop)'}
         </span>
       </div>
 
       <div className="absolute top-3 right-3 z-10 text-[10px] text-slate-500 hidden md:flex items-center gap-1">
         <GitBranch className="w-3.5 h-3.5 text-emerald-700" />
-        {lang === 'en' ? 'Click a cluster for BQ detail' : lang === 'zh-HK' ? '點擊分類查看 BQ 明細' : '点击分类查看 BQ 明细'}
+        {lang === 'en' ? 'Click a trade to highlight its row' : lang === 'zh-HK' ? '點擊分類查看 BQ 明細' : '点击分类查看 BQ 明细'}
       </div>
     </div>
   );
