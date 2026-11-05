@@ -6,14 +6,13 @@ import {
   FileText,
   GitBranch,
   Scale,
-  Shield,
 } from 'lucide-react';
 import DocumentsPanel, { PackDoc } from '../components/DocumentsPanel';
 import ImpactKnowledgeGraph, { ImpactGraphPayload, GraphNode } from '../components/ImpactKnowledgeGraph';
 import CitedReportPage from './CitedReportPage';
 import { translations, Language } from '../i18n';
 
-type Tab = 'documents' | 'impact' | 'value' | 'claim' | 'certify' | 'report';
+type Tab = 'documents' | 'impact' | 'value' | 'claim' | 'report';
 
 type Props = {
   lang: Language;
@@ -33,14 +32,12 @@ const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'impact', label: 'Impact', icon: <GitBranch className="w-3.5 h-3.5" /> },
   { id: 'value', label: 'Fair value', icon: <Calculator className="w-3.5 h-3.5" /> },
   { id: 'claim', label: 'Claim check', icon: <Scale className="w-3.5 h-3.5" /> },
-  { id: 'certify', label: 'Certify', icon: <Shield className="w-3.5 h-3.5" /> },
   { id: 'report', label: 'Evidence pack', icon: <FileCheck className="w-3.5 h-3.5" /> },
 ];
 
 export default function WorkspacePage({ lang, setLang, docs, onUpload, onBack, onExport }: Props) {
   const [tab, setTab] = useState<Tab>('documents');
   const [detail, setDetail] = useState<any>(null);
-  const [cv, setCv] = useState<any>(null);
   const [graph, setGraph] = useState<ImpactGraphPayload | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const t = translations[lang];
@@ -50,10 +47,6 @@ export default function WorkspacePage({ lang, setLang, docs, onUpload, onBack, o
       .then((r) => r.json())
       .then(setDetail)
       .catch(() => setDetail(null));
-    fetch('/api/cv/module/V-2026-017')
-      .then((r) => r.json())
-      .then(setCv)
-      .catch(() => setCv(null));
     fetch('/api/graph/V-2026-017')
       .then((r) => r.json())
       .then(setGraph)
@@ -62,8 +55,6 @@ export default function WorkspacePage({ lang, setLang, docs, onUpload, onBack, o
 
   const fv = detail?.fair_value_calculation;
   const claim = detail?.contractor_claim_adjudication;
-  const cert = cv?.certification;
-  const milestones = cv?.milestones ?? [];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f3f4f6]">
@@ -259,65 +250,6 @@ export default function WorkspacePage({ lang, setLang, docs, onUpload, onBack, o
                   </tbody>
                 </table>
               </div>
-            </div>
-          )}
-
-          {tab === 'certify' && (
-            <div className="space-y-4">
-              <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Certify</p>
-                <h2 className="text-xl font-extrabold text-slate-900 mt-1">Milestone certification</h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Site photos support sign-off only — m² from Drawing A-201. No image gallery in this view.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-white rounded-2xl border border-slate-200 p-4">
-                  <div className="text-[10px] uppercase text-slate-400 font-bold">Completeness</div>
-                  <div className="text-2xl font-black mono mt-1">{cert?.weighted_completeness_pct ?? 60}%</div>
-                </div>
-                <div className="bg-white rounded-2xl border border-emerald-200 p-4">
-                  <div className="text-[10px] uppercase text-slate-400 font-bold">Payable now</div>
-                  <div className="text-2xl font-black mono text-emerald-700 mt-1">
-                    HK$ {fmt(cert?.payable_milestone_hkd ?? 7500)}
-                  </div>
-                </div>
-                <div className="bg-white rounded-2xl border border-amber-200 p-4">
-                  <div className="text-[10px] uppercase text-slate-400 font-bold">Withheld</div>
-                  <div className="text-2xl font-black mono text-amber-700 mt-1">
-                    HK$ {fmt(cert?.withheld_pending_hkd ?? 11250)}
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
-                    <tr>
-                      <th className="px-4 py-3">Element</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Progress</th>
-                      <th className="px-4 py-3">Weight</th>
-                      <th className="px-4 py-3">Citation</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {milestones.map((m: any) => (
-                      <tr key={m.id}>
-                        <td className="px-4 py-3 font-semibold">{m.element}</td>
-                        <td className="px-4 py-3 mono text-xs">{m.status}</td>
-                        <td className="px-4 py-3 mono">{m.progress_pct}%</td>
-                        <td className="px-4 py-3 mono">{m.weight_pct}%</td>
-                        <td className="px-4 py-3 text-xs text-slate-500">{m.citation}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {cert?.certifier_note && (
-                <p className="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-4">
-                  {cert.certifier_note}
-                </p>
-              )}
             </div>
           )}
 

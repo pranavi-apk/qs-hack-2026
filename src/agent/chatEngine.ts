@@ -1,11 +1,4 @@
-export type ViewId =
-  | 'overview'
-  | 'documents'
-  | 'impact'
-  | 'value'
-  | 'claim'
-  | 'certify'
-  | 'report';
+export type ViewId = 'overview' | 'pack' | 'value' | 'claim' | 'report';
 
 export type ChatMsg = {
   id: string;
@@ -22,20 +15,15 @@ export function replyToPrompt(
     payable: number;
     completeness: number;
     docCount: number;
+    variationId: string;
   }
 ): { text: string; view: ViewId } {
   const p = prompt.toLowerCase();
 
-  if (/document|pack|upload|bq|drawing/.test(p)) {
+  if (/document|pack|upload|bq|drawing|impact|graph|knock|ripple|263/.test(p)) {
     return {
-      view: 'documents',
-      text: `I have ${ctx.docCount} files in the variation pack (instruction, BQ, Drawing A-201, claim, spec, site checklist).\n\nQuantities come from the drawing takeoff — not from photos. Open Documents to review the checklist, or ask me to run fair value.`,
-    };
-  }
-  if (/impact|graph|knock|ripple|263/.test(p)) {
-    return {
-      view: 'impact',
-      text: `Impact Trace shows 263 affected contract items for lobby +20% (48 direct / 215 indirect).\n\nI’ve opened the knowledge graph. Click a cluster for BQ line samples.`,
+      view: 'pack',
+      text: `I have ${ctx.docCount} files in the variation pack. The impact trace links each document to variation ${ctx.variationId} and the BQ knock-on clusters (263 items: 48 direct / 215 indirect).\n\nSelect the instruction PDF to see the full blast radius, or a drawing for quantity-driven clusters.`,
     };
   }
   if (/fair|hksmm|value|rate|valuat/.test(p)) {
@@ -52,8 +40,8 @@ export function replyToPrompt(
   }
   if (/certif|milestone|payable|complet|as-?built|progress/.test(p)) {
     return {
-      view: 'certify',
-      text: `Weighted completeness is ${ctx.completeness}%. Cap. 652–aligned payable this period: HK$${ctx.payable.toLocaleString('en-HK')}; balance withheld pending skirting/grout.\n\nMilestone table is open — no photo gallery; evidence is checklist + citations.`,
+      view: 'overview',
+      text: `Weighted completeness is ${ctx.completeness}%. Cap. 652–aligned payable this period: HK$${ctx.payable.toLocaleString('en-HK')}; balance withheld pending skirting/grout.\n\nScroll to **Milestone certification** on Case overview — drawing takeoff for m²; site photos support sign-off only.`,
     };
   }
   if (/report|evidence|export|pdf|cap\.?\s*652|provab|pack/.test(p)) {
@@ -65,12 +53,12 @@ export function replyToPrompt(
   if (/overview|summar|what|status|hello|hi /.test(p) || p.length < 12) {
     return {
       view: 'overview',
-      text: `Here’s V-2026-017 in one glance:\n• Fair value HK$${ctx.fairValue.toLocaleString('en-HK')}\n• Inflation flagged HK$${ctx.inflation.toLocaleString('en-HK')}\n• Payable now HK$${ctx.payable.toLocaleString('en-HK')} (${ctx.completeness}% complete)\n\nAsk me to open Impact, Fair value, Claim check, Certify, or the Evidence pack — or tap a card below.`,
+      text: `Here’s ${ctx.variationId} in one glance:\n• Fair value HK$${ctx.fairValue.toLocaleString('en-HK')}\n• Inflation flagged HK$${ctx.inflation.toLocaleString('en-HK')}\n• Payable now HK$${ctx.payable.toLocaleString('en-HK')} (${ctx.completeness}% complete)\n\nAsk me to open Pack & impact, Fair value, Claim check, or the Evidence pack — milestones are on Case overview.`,
     };
   }
   return {
     view: 'overview',
-    text: `I can help with this variation pack: documents, impact graph, HKSMM4 fair value, claim inflation, milestone certification, or the Cap. 652 evidence pack.\n\nTry: “Show fair value” or “Flag inflated claim lines”.`,
+    text: `I can help with this variation pack: pack & impact trace, HKSMM4 fair value, claim inflation, milestone certification, or the Cap. 652 evidence pack.\n\nTry: “Show fair value” or “Trace knock-on impact”.`,
   };
 }
 

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8" />
+  <title>{{ report_ref }} — {{ labels.doc_title }}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 22mm 18mm 20mm 18mm;
+    }
+    body {
+      font-size: 10pt;
+      color: #000;
+      line-height: 1.5;
+      {% if lang != 'zh-HK' %}font-family: Helvetica, Arial, sans-serif;{% endif %}
+    }
+    {{ font_css | safe }}
+    .gov-block {
+      border-bottom: 2px solid #000;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    .gov-header {
+      font-size: 11pt;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+    .gov-sub {
+      font-size: 9pt;
+      text-align: center;
+      margin-top: 4px;
+    }
+    .ref-table {
+      width: 100%;
+      margin: 12px 0 16px;
+      font-size: 9.5pt;
+    }
+    .ref-table td {
+      padding: 3px 0;
+      vertical-align: top;
+    }
+    .ref-label {
+      width: 28%;
+      font-weight: bold;
+    }
+    h1 {
+      font-size: 14pt;
+      margin: 0 0 10px;
+      font-weight: bold;
+    }
+    h2 {
+      font-size: 11pt;
+      margin: 16px 0 8px;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+      padding-bottom: 3px;
+    }
+    .stamp {
+      border: 1px solid #333;
+      padding: 6px 10px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 8pt;
+      margin-bottom: 12px;
+    }
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 9pt;
+    }
+    table.data th, table.data td {
+      border: 1px solid #333;
+      padding: 5px 7px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.data th {
+      background: #f0f0f0;
+      font-weight: bold;
+    }
+    .kpi-table td { width: 25%; }
+    .kpi-val { font-size: 11pt; font-weight: bold; }
+    .warn { color: #000; font-weight: bold; }
+    .muted { color: #333; font-size: 9pt; }
+    .record {
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+    }
+    .record-title { font-weight: bold; }
+    ol.workflow { padding-left: 20px; margin: 0; }
+    ol.workflow li { margin-bottom: 5px; }
+    .sign-block {
+      margin-top: 28px;
+      page-break-inside: avoid;
+    }
+    .sign-line {
+      margin-top: 36px;
+      border-top: 1px solid #000;
+      width: 55%;
+      padding-top: 4px;
+      font-size: 9pt;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: 8pt;
+      color: #444;
+      border-top: 1px solid #ccc;
+      padding-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="gov-block">
+    <div class="gov-header">{{ labels.gov_header }}</div>
+    <div class="gov-sub">{{ labels.gov_subheader }}</div>
+  </div>
+
+  <table class="ref-table">
+    <tr>
+      <td class="ref-label">{{ labels.ref_label }}:</td>
+      <td>{{ report_ref }}</td>
+    </tr>
+    <tr>
+      <td class="ref-label">{{ labels.issued }}:</td>
+      <td>{{ meta.issued_date or pack.assembled_at[:10] }}</td>
+    </tr>
+    <tr>
+      <td class="ref-label">{{ labels.project_ref }}:</td>
+      <td>{{ project }} — {{ variation_id }}</td>
+    </tr>
+    <tr>
+      <td class="ref-label">{{ labels.subject }}:</td>
+      <td>{{ labels.subject_text }} — {{ variation_title }}</td>
+    </tr>
+  </table>
+
+  <div class="stamp">{{ labels.stamp }}</div>
+  <h1>{{ labels.doc_title }}</h1>
+
+  <h2>{{ labels.executive }}</h2>
+  <table class="data kpi-table">
+    <tr>
+      <td><span class="muted">{{ labels.fair_value }}</span><div class="kpi-val">{{ fmt_hkd(es.total_fair_value) }}</div></td>
+      <td><span class="muted">{{ labels.inflation }}</span><div class="kpi-val warn">{{ fmt_hkd(es.inflated_amount_detected) }}</div></td>
+      <td><span class="muted">{{ labels.payable }}</span><div class="kpi-val">{{ fmt_hkd(pack.payment_clock.admitted_payable_hkd) }}</div></td>
+      <td><span class="muted">{{ labels.completeness }}</span><div class="kpi-val">{{ es.completeness_cv or (pack.certification_math.weighted_completeness_pct ~ '%') }}</div></td>
+    </tr>
+  </table>
+
+  <h2>{{ labels.provability }} ({{ pack.provability.score }}/100)</h2>
+  <p>{{ provability_summary }}</p>
+  <ul class="muted">
+    {% for s in provability_signals %}
+    <li>{{ s.label }} — {{ s.note }}</li>
+    {% endfor %}
+  </ul>
+
+  <h2>{{ labels.clock }}</h2>
+  <p class="muted">{{ clock_ordinance }}</p>
+  <table class="data">
+    <tr><th>{{ labels.claim_received }}</th><td>{{ pack.payment_clock.claim_received }}</td></tr>
+    <tr><th>{{ labels.response_due }}</th><td>{{ pack.payment_clock.response_deadline }}</td></tr>
+    <tr><th>{{ labels.days_left }}</th><td>{{ pack.payment_clock.days_to_response }}</td></tr>
+    <tr><th>{{ labels.admitted }}</th><td>{{ fmt_hkd(pack.payment_clock.admitted_payable_hkd) }}</td></tr>
+    <tr><th>{{ labels.disputed }}</th><td class="warn">{{ fmt_hkd(pack.payment_clock.disputed_hkd) }}</td></tr>
+    <tr><th>{{ labels.withheld }}</th><td>{{ fmt_hkd(pack.payment_clock.withheld_pending_milestones_hkd) }}</td></tr>
+  </table>
+  <p class="muted">{{ clock_basis }}</p>
+
+  <h2>{{ labels.workflow }}</h2>
+  <ol class="workflow">
+    {% for step in workflow_steps %}
+    <li><strong>{{ step.stage }}</strong> ({{ step.ref }}) — {{ step.detail }} · {{ step.date }}</li>
+    {% endfor %}
+  </ol>
+
+  <h2>{{ labels.records }}</h2>
+  {% for rec in evidence_records %}
+  <div class="record">
+    <div class="record-title">{{ rec.seq }}. {{ rec.title }}</div>
+    <div class="muted">{{ rec.source }} · {{ rec.date }}</div>
+    <p>{{ rec.summary }}</p>
+  </div>
+  {% endfor %}
+
+  <h2>{{ labels.annex }}</h2>
+  <table class="data">
+    <tr>
+      <th>{{ labels.item }}</th>
+      <th>{{ labels.claim }}</th>
+      <th>{{ labels.fair }}</th>
+      <th>{{ labels.variance }}</th>
+      <th>{{ labels.flag }}</th>
+    </tr>
+    {% for row in annex_items %}
+    <tr>
+      <td>{{ row.item }}</td>
+      <td>{{ fmt_hkd(row.claim_amount) }}</td>
+      <td>{{ fmt_hkd(row.cascade_fair) }}</td>
+      <td class="warn">{{ fmt_hkd(row.variance) }}</td>
+      <td>{{ row.flag }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>{{ labels.conclusion }}</h2>
+  <p>{{ conclusion_text }}</p>
+
+  <p class="muted"><strong>{{ labels.integrity }}:</strong> {{ pack.document_hash }}</p>
+
+  <div class="sign-block">
+    <p><strong>{{ labels.signatory }}</strong></p>
+    <div class="sign-line">{{ labels.signatory_line }}</div>
+  </div>
+
+  <footer>{{ labels.footer }}</footer>
+</body>
+</html>

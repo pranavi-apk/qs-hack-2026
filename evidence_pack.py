@@ -260,6 +260,9 @@ def assemble_evidence_pack(detail: Dict[str, Any], report: Dict[str, Any]) -> Di
     clock = build_payment_clock("2026-07-25")
     provability = build_provability(detail)
     cert_math = build_certification_math(detail)
+    clock["admitted_payable_hkd"] = cert_math["payable_this_period_hkd"]
+    clock["withheld_pending_milestones_hkd"] = cert_math["withheld_hkd"]
+    clock["disputed_hkd"] = float(claim.get("total_variance") or clock.get("disputed_hkd") or 0)
 
     core = {
         "subject_type": "variation_order",

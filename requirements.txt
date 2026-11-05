@@ -5,3 +5,7 @@ uvicorn
 python-dotenv
 requests
 pydantic
+python-multipart
+pypdf
+jinja2
+xhtml2pdf

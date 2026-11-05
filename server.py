@@ -1,8 +1,9 @@
 import os
 import json
 import requests
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from dotenv import load_dotenv
@@ -10,8 +11,14 @@ from dotenv import load_dotenv
 from cv_measure import enrich_cv_module
 from graph_store import get_impact_graph
 from evidence_pack import assemble_evidence_pack
+from pack_ingest import ingest_uploaded_pack
+from document_export import render_evidence_html, render_evidence_pdf
 
 load_dotenv()
+
+# In-memory cases keyed by variation id (uploaded packs + demo id)
+CASES: Dict[str, Any] = {}
+CASE_FILE_STORE: Dict[str, List[Dict[str, Any]]] = {}
 
 app = FastAPI(title="Cascade AI - QS Decision Support")
 
@@ -386,12 +393,11 @@ def get_dashboard():
 
 @app.get("/api/variation/{variation_id}")
 def get_variation_detail(variation_id: str):
+    if variation_id in CASES:
+        return CASES[variation_id]
     if variation_id == "V-2026-017":
         return VARIATION_DATA
-    # Return standard variation fallback
-    data = dict(VARIATION_DATA)
-    data["id"] = variation_id
-    return data
+    raise HTTPException(status_code=404, detail=f"Unknown variation {variation_id}")
 
 @app.post("/api/ai/analyze-variation")
 def analyze_with_ai(req: PromptRequest):
@@ -495,23 +501,7 @@ def get_drawing_takeoff(variation_id: str):
 @app.get("/api/report/{variation_id}")
 def get_cited_report(variation_id: str):
     """Export-ready cited valuation + Claims Evidence pack (OCE-inspired, HK-scoped)."""
-    detail = get_variation_detail(variation_id)
-    report = dict(detail.get("cited_report", VARIATION_DATA["cited_report"]))
-    fv = detail.get("fair_value_calculation", VARIATION_DATA["fair_value_calculation"])
-    claim = detail.get("contractor_claim_adjudication", VARIATION_DATA["contractor_claim_adjudication"])
-    pack = assemble_evidence_pack(detail, report)
-    # Keep report metadata hash in sync with assembled pack
-    meta = dict(report.get("metadata") or {})
-    meta["document_hash"] = pack["document_hash"]
-    report["metadata"] = meta
-    return {
-        **report,
-        "variation_id": variation_id,
-        "fair_value_total": fv.get("total_fair_value"),
-        "contractor_claim_total": claim.get("total_claim"),
-        "variance_total": claim.get("total_variance"),
-        "evidence_pack": pack,
-    }
+    return _build_report_payload(variation_id)
 
 
 @app.get("/api/evidence-pack/{variation_id}")
@@ -522,28 +512,120 @@ def get_evidence_pack(variation_id: str):
     return assemble_evidence_pack(detail, report)
 
 
+def _build_report_payload(variation_id: str) -> Dict[str, Any]:
+    detail = get_variation_detail(variation_id)
+    report = dict(detail.get("cited_report", VARIATION_DATA["cited_report"]))
+    fv = detail.get("fair_value_calculation", VARIATION_DATA["fair_value_calculation"])
+    claim = detail.get("contractor_claim_adjudication", VARIATION_DATA["contractor_claim_adjudication"])
+    pack = assemble_evidence_pack(detail, report)
+    meta = dict(report.get("metadata") or {})
+    meta["document_hash"] = pack["document_hash"]
+    report["metadata"] = meta
+    es = dict(report.get("executive_summary") or {})
+    es["total_fair_value"] = fv.get("total_fair_value")
+    es["inflated_amount_detected"] = claim.get("total_variance")
+    es["inflated_percentage"] = claim.get("inflated_percentage")
+    es["payable_delta"] = pack["payment_clock"].get("admitted_payable_hkd")
+    es["completeness_cv"] = f"{pack['certification_math'].get('weighted_completeness_pct', 60):.0f}%"
+    report["executive_summary"] = es
+    return {
+        **report,
+        "variation_id": variation_id,
+        "variation_title": detail.get("title", report.get("variation_title")),
+        "fair_value_total": fv.get("total_fair_value"),
+        "contractor_claim_total": claim.get("total_claim"),
+        "variance_total": claim.get("total_variance"),
+        "evidence_pack": pack,
+    }
+
+
+@app.get("/api/evidence-pack/{variation_id}/export.html")
+def export_evidence_html(variation_id: str, lang: str = "en"):
+    detail = get_variation_detail(variation_id)
+    report = _build_report_payload(variation_id)
+    html = render_evidence_html(detail, report, lang)
+    filename = f"Cascade-EP-{variation_id}.html"
+    return HTMLResponse(
+        content=html,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@app.get("/api/evidence-pack/{variation_id}/export.pdf")
+def export_evidence_pdf(variation_id: str, lang: str = "en"):
+    detail = get_variation_detail(variation_id)
+    report = _build_report_payload(variation_id)
+    try:
+        pdf_bytes, _engine = render_evidence_pdf(detail, report, lang)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    filename = f"Cascade-EP-{variation_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
 @app.post("/api/pack/upload")
-async def upload_variation_pack(files: List[UploadFile] = File(...)):
-    """Accept document pack uploads for the demo workspace (files kept in memory only)."""
-    accepted = []
+async def upload_variation_pack(
+    files: List[UploadFile] = File(...),
+    variation_id: Optional[str] = Form(None),
+):
+    """Ingest uploaded pack: extract PDF text, build case, graph, and valuation."""
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded")
+    payloads = []
     for f in files:
         raw = await f.read()
+        payloads.append(
+            {
+                "filename": f.filename or "upload.bin",
+                "content_type": f.content_type,
+                "raw": raw,
+            }
+        )
+    if variation_id and variation_id in CASE_FILE_STORE:
+        CASE_FILE_STORE[variation_id].extend(payloads)
+        ingest_payloads = CASE_FILE_STORE[variation_id]
+    else:
+        ingest_payloads = payloads
+    try:
+        variation = ingest_uploaded_pack(ingest_payloads, VARIATION_DATA)
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=f"Ingest failed: {exc}") from exc
+    vid = variation_id if variation_id and variation_id in CASES else variation["id"]
+    variation["id"] = vid
+    gcenter = variation.get("graph", {}).get("center")
+    if gcenter:
+        gcenter["id"] = vid
+    CASES[vid] = variation
+    CASE_FILE_STORE[vid] = ingest_payloads
+    accepted = []
+    for doc in variation.get("pack_documents") or []:
         accepted.append(
             {
-                "id": f.filename or "upload",
-                "name": f.filename or "upload.bin",
-                "category": "Uploaded",
+                "id": doc["id"],
+                "name": doc["filename"],
+                "category": doc["discipline"],
                 "status": "ready",
-                "role": f"Received · {len(raw):,} bytes (demo — not persisted)",
-                "content_type": f.content_type,
+                "role": doc.get("role", "Ingested"),
             }
         )
     return {
         "ok": True,
         "count": len(accepted),
         "files": accepted,
-        "message": "Pack received. Open Impact → Fair value → Claim → Certify → Evidence pack.",
-        "variation_id": "V-2026-017",
+        "variation_id": vid,
+        "title": variation.get("title"),
+        "ingest": variation.get("ingest_meta", {}),
+        "message": f"Case {vid} created from {len(files)} file(s). Fair value and graph updated from extracted data.",
     }
 
 

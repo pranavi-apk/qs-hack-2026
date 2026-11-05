@@ -160,6 +160,8 @@ function statusTone(status: string) {
 
 export default function CitedReportPage({ t, variationId, onExport }: Props) {
   const [report, setReport] = useState<CitedReportPayload | null>(null);
+  const [exportLang, setExportLang] = useState<'en' | 'zh-HK'>('en');
+  const [exporting, setExporting] = useState<'pdf' | 'html' | null>(null);
 
   useEffect(() => {
     fetch(`/api/report/${variationId}`)
@@ -167,6 +169,28 @@ export default function CitedReportPage({ t, variationId, onExport }: Props) {
       .then(setReport)
       .catch(() => setReport(null));
   }, [variationId]);
+
+  const downloadDocument = async (format: 'pdf' | 'html') => {
+    setExporting(format);
+    try {
+      const url = `/api/evidence-pack/${encodeURIComponent(variationId)}/export.${format}?lang=${exportLang}&_=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Export failed');
+      }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Cascade-EP-${variationId}.${format}`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (e) {
+      window.alert(e instanceof Error ? e.message : 'Export failed');
+    } finally {
+      setExporting(null);
+    }
+  };
 
   const r = t.report;
   const es = report?.executive_summary;
@@ -187,14 +211,43 @@ export default function CitedReportPage({ t, variationId, onExport }: Props) {
           <p className="text-sm text-slate-600 mt-2">{r.reportSub}</p>
           <p className="text-[11px] text-slate-500 mt-1 font-mono">{r.packLabel}</p>
         </div>
-        <button
-          type="button"
-          onClick={onExport}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-2xl text-sm font-bold shadow-lg shadow-blue-600/20 cursor-pointer print:hidden no-print"
-        >
-          <Download className="w-4 h-4" />
-          {r.downloadBtn}
-        </button>
+        <div className="flex flex-col items-end gap-2 print:hidden no-print">
+          <select
+            value={exportLang}
+            onChange={(e) => setExportLang(e.target.value as 'en' | 'zh-HK')}
+            className="text-xs font-semibold border border-slate-200 rounded-lg px-2 py-1.5 bg-white"
+          >
+            <option value="en">English</option>
+            <option value="zh-HK">繁體中文（粵語書面語）</option>
+          </select>
+          <div className="flex flex-wrap gap-2 justify-end">
+            <button
+              type="button"
+              disabled={!!exporting}
+              onClick={() => downloadDocument('pdf')}
+              className="inline-flex items-center gap-2 bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-teal-700/20 cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              {exporting === 'pdf' ? 'Generating…' : 'Download PDF'}
+            </button>
+            <button
+              type="button"
+              disabled={!!exporting}
+              onClick={() => downloadDocument('html')}
+              className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:border-teal-600 text-slate-800 px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              {exporting === 'html' ? 'Generating…' : 'Download HTML'}
+            </button>
+            <button
+              type="button"
+              onClick={onExport}
+              className="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer"
+            >
+              Print
+            </button>
+          </div>
+        </div>
       </div>
 
       {!report ?

@@ -2,16 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   FileCheck,
-  FileText,
   GitBranch,
   LayoutGrid,
   Paperclip,
   Scale,
-  Shield,
   Calculator,
 } from 'lucide-react';
-import ImpactKnowledgeGraph, { GraphNode, ImpactGraphPayload } from '../components/ImpactKnowledgeGraph';
+import PackImpactPanel from '../components/PackImpactPanel';
+import CaseOverviewPanel from '../components/CaseOverviewPanel';
 import CitedReportPage from './CitedReportPage';
+import type { ImpactGraphPayload } from '../components/ImpactKnowledgeGraph';
 import { translations } from '../i18n';
 import {
   ChatMsg,
@@ -23,17 +23,20 @@ import {
 type Props = {
   initialPrompt: string;
   files: File[];
+  variationId: string;
+  sample: boolean;
+  caseTitle?: string;
   onHome: () => void;
   onExport: () => void;
+  onReingest: (files: File[]) => Promise<void>;
+  ingestVersion: number;
 };
 
 const NAV: { id: ViewId; label: string; icon: React.ReactNode }[] = [
   { id: 'overview', label: 'Case overview', icon: <LayoutGrid size={18} /> },
-  { id: 'documents', label: 'Documents', icon: <FileText size={18} /> },
-  { id: 'impact', label: 'Impact graph', icon: <GitBranch size={18} /> },
+  { id: 'pack', label: 'Pack & impact', icon: <GitBranch size={18} /> },
   { id: 'value', label: 'Fair value', icon: <Calculator size={18} /> },
   { id: 'claim', label: 'Claim check', icon: <Scale size={18} /> },
-  { id: 'certify', label: 'Certify', icon: <Shield size={18} /> },
   { id: 'report', label: 'Evidence pack', icon: <FileCheck size={18} /> },
 ];
 
@@ -41,17 +44,26 @@ function fmt(n: number) {
   return n.toLocaleString('en-HK', { maximumFractionDigits: 0 });
 }
 
-export default function AgentWorkspace({ initialPrompt, files, onHome, onExport }: Props) {
+export default function AgentWorkspace({
+  initialPrompt,
+  files,
+  variationId,
+  sample,
+  caseTitle,
+  onHome,
+  onExport,
+  onReingest,
+  ingestVersion,
+}: Props) {
   const [view, setView] = useState<ViewId>('overview');
   const [phase, setPhase] = useState<'running' | 'ready'>('running');
   const [stepIdx, setStepIdx] = useState(0);
   const [detail, setDetail] = useState<any>(null);
   const [cv, setCv] = useState<any>(null);
   const [graph, setGraph] = useState<ImpactGraphPayload | null>(null);
-  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState('');
-  const [sidecarOpen, setSidecarOpen] = useState(true);
+  const [sidecarOpen, setSidecarOpen] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const t = translations.en;
 
@@ -75,10 +87,25 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
   }, []);
 
   useEffect(() => {
-    fetch('/api/variation/V-2026-017').then((r) => r.json()).then(setDetail).catch(() => null);
-    fetch('/api/cv/module/V-2026-017').then((r) => r.json()).then(setCv).catch(() => null);
-    fetch('/api/graph/V-2026-017').then((r) => r.json()).then(setGraph).catch(() => null);
-  }, []);
+    setDetail(null);
+    setCv(null);
+    setGraph(null);
+    fetch(`/api/variation/${encodeURIComponent(variationId)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('Case not found');
+        return r.json();
+      })
+      .then(setDetail)
+      .catch(() => null);
+    fetch(`/api/cv/module/${encodeURIComponent(variationId)}`)
+      .then((r) => r.json())
+      .then(setCv)
+      .catch(() => null);
+    fetch(`/api/graph/${encodeURIComponent(variationId)}`)
+      .then((r) => r.json())
+      .then(setGraph)
+      .catch(() => null);
+  }, [variationId, ingestVersion]);
 
   useEffect(() => {
     if (phase !== 'ready') return;
@@ -88,6 +115,7 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
       payable,
       completeness,
       docCount,
+      variationId,
     });
     setMessages([
       { id: 'u0', role: 'user', text: initialPrompt },
@@ -96,12 +124,14 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
         role: 'agent',
         text:
           (files.length
-            ? `Received ${files.length} file(s): ${files.map((f) => f.name).join(', ')}.\n\n`
-            : 'Opened sample case V-2026-017 (HA Block 4 lobby +20%).\n\n') + first.text,
-        viewHint: first.view,
+            ? `Ingested ${files.length} file(s) into case ${variationId}${caseTitle ? ` — ${caseTitle}` : ''}.\n\n`
+            : sample ?
+              `Opened sample case V-2026-017 (HA Block 4 lobby +20%).\n\n`
+            : `Working on case ${variationId}.\n\n`) + first.text,
+        viewHint: 'overview',
       },
     ]);
-    setView(first.view);
+    setView('overview');
   }, [phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -117,6 +147,7 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
       payable,
       completeness,
       docCount,
+      variationId,
     });
     setMessages((m) => [
       ...m,
@@ -129,13 +160,17 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
       },
     ]);
     setView(reply.view);
+    if (reply.view === 'overview' && /milestone certification/i.test(reply.text)) {
+      window.setTimeout(() => {
+        document.getElementById('case-milestones')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 120);
+    }
     setDraft('');
-    setSidecarOpen(true);
+    setSidecarOpen(false);
   };
 
   const fv = detail?.fair_value_calculation;
   const claim = detail?.contractor_claim_adjudication;
-  const milestones = cv?.milestones ?? [];
   const sampleDocs = [
     'AI-2026-084.pdf',
     'BQ_08-12_finishes.pdf',
@@ -192,7 +227,10 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
               <div className={`agent-work-split-container ${sidecarOpen ? '' : 'sidecar-collapsed'}`}>
               <div className="agent-main-content-panel">
                 <div className="panel-subnav-bar no-print">
-                  <div className="panel-case-title">V-2026-017 · Lobby size +20%</div>
+                  <div className="panel-case-title">
+                    {variationId}
+                    {detail?.title ? ` · ${detail.title}` : caseTitle ? ` · ${caseTitle}` : ''}
+                  </div>
                   <button
                     type="button"
                     className={`btn-toggle-copilot ${sidecarOpen ? 'active' : ''}`}
@@ -203,85 +241,25 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
                 </div>
                 <div className="agent-panel-body">
                   {view === 'overview' && (
-                    <div>
-                      <h2 style={{ fontFamily: 'Outfit, Plus Jakarta Sans, sans-serif', marginBottom: 8 }}>
-                        Case overview
-                      </h2>
-                      <p style={{ color: '#6b645b', marginBottom: 16 }}>
-                        HA Public Housing · Block 4 · Cap. 652 payment response in progress
-                      </p>
-                      <div className="metric-row">
-                        <div className="metric">
-                          <b>HK$ {fmt(fairValue)}</b>
-                          <span>Fair value</span>
-                        </div>
-                        <div className="metric">
-                          <b style={{ color: '#dc2626' }}>HK$ {fmt(inflation)}</b>
-                          <span>Inflation flagged</span>
-                        </div>
-                        <div className="metric">
-                          <b>HK$ {fmt(payable)}</b>
-                          <span>Payable now</span>
-                        </div>
-                        <div className="metric">
-                          <b>{completeness}%</b>
-                          <span>Completeness</span>
-                        </div>
-                      </div>
-                      <div className="result-action-cards-grid" style={{ marginTop: 20 }}>
-                        {NAV.filter((n) => n.id !== 'overview').map((n) => (
-                          <button
-                            key={n.id}
-                            type="button"
-                            className={`action-card ${n.id === 'report' ? 'highlight-gold-card' : ''}`}
-                            onClick={() => setView(n.id)}
-                          >
-                            <div className="card-icon">{n.icon}</div>
-                            <div className="card-text">{n.label}</div>
-                            <div className="card-arrow">
-                              <ArrowRight size={16} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    <CaseOverviewPanel
+                      detail={detail}
+                      cv={cv}
+                      docCount={docCount}
+                      navItems={NAV}
+                      onNavigate={setView}
+                    />
                   )}
 
-                  {view === 'documents' && (
-                    <div className="doc-directory-container">
-                      <div className="doc-directory-header">
-                        <h2 style={{ margin: 0 }}>Knowledge base</h2>
-                        <span className="kg-badge">{docNames.length} files</span>
-                      </div>
-                      <div className="doc-list-grid">
-                        {docNames.map((name) => (
-                          <div key={name} className="doc-file-card">
-                            <div className="doc-file-icon">
-                              <FileText size={18} color="#0f766e" />
-                            </div>
-                            <div className="doc-file-details">
-                              <strong>{name}</strong>
-                              <span style={{ fontSize: 12, color: '#787062' }}>Ready · cited in evidence pack</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {view === 'impact' && (
-                    <div style={{ minHeight: 480 }}>
-                      <h2 style={{ marginTop: 0 }}>Impact graph</h2>
-                      {graph ?
-                        <ImpactKnowledgeGraph
-                          data={graph}
-                          lang="en"
-                          selectedId={selectedNode?.id ?? null}
-                          onSelectNode={setSelectedNode}
-                        />
-                      : <div className="metric">Loading graph…</div>}
-                    </div>
-                  )}
+                  {view === 'pack' &&
+                    (graph ?
+                      <PackImpactPanel
+                        data={graph}
+                        uploadedNames={files.length ? files.map((f) => f.name) : docNames}
+                        onUpload={(list) => {
+                          void onReingest(Array.from(list));
+                        }}
+                      />
+                    : <div className="metric">Loading pack &amp; impact graph…</div>)}
 
                   {view === 'value' && (
                     <div>
@@ -338,35 +316,8 @@ export default function AgentWorkspace({ initialPrompt, files, onHome, onExport 
                     </div>
                   )}
 
-                  {view === 'certify' && (
-                    <div>
-                      <h2 style={{ marginTop: 0 }}>Milestone certification</h2>
-                      <div className="metric-row">
-                        <div className="metric">
-                          <b>{completeness}%</b>
-                          <span>Weighted complete</span>
-                        </div>
-                        <div className="metric">
-                          <b>HK$ {fmt(payable)}</b>
-                          <span>Payable</span>
-                        </div>
-                        <div className="metric">
-                          <b>HK$ {fmt(cv?.certification?.withheld_pending_hkd ?? 11250)}</b>
-                          <span>Withheld</span>
-                        </div>
-                      </div>
-                      <div style={{ marginTop: 16 }}>
-                        {milestones.map((m: any) => (
-                          <div key={m.id} className="finding">
-                            <strong>{m.element}</strong> — {m.status} · {m.progress_pct}% · {m.citation}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {view === 'report' && (
-                    <CitedReportPage t={t} variationId="V-2026-017" onExport={onExport} />
+                    <CitedReportPage t={t} variationId={variationId} onExport={onExport} />
                   )}
                 </div>
               </div>

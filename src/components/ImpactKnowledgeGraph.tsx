@@ -5,11 +5,16 @@ import { anchorEdge, layoutImpactGraph } from '../lib/impactGraphLayout';
 export type GraphNode = {
   id: string;
   label: string;
-  type: 'variation' | 'cluster' | 'bq_item';
+  type: 'variation' | 'cluster' | 'bq_item' | 'document';
   hop: number;
   count: number;
   size?: number;
   items?: string[];
+  filename?: string;
+  discipline?: string;
+  role?: string;
+  is_trigger?: boolean;
+  cluster_ids?: string[];
 };
 
 export type GraphLink = {
@@ -24,6 +29,15 @@ export type ImpactGraphPayload = {
   variation_id: string;
   engine: string;
   engine_note?: string;
+  documents?: {
+    id: string;
+    label: string;
+    filename: string;
+    discipline: string;
+    role: string;
+    is_trigger?: boolean;
+    cluster_ids?: string[];
+  }[];
   nodes: GraphNode[];
   links: GraphLink[];
   stats: {
@@ -39,6 +53,9 @@ const LINK_STROKE: Record<string, { color: string; width: number; dash?: string 
   direct: { color: '#1A3D32', width: 2.5 },
   indirect_2hop: { color: '#B45309', width: 1.8, dash: '7 5' },
   indirect_3hop: { color: '#94A3B8', width: 1.4, dash: '2 5' },
+  triggers: { color: '#0f766e', width: 2.2 },
+  cites: { color: '#64748b', width: 1.6, dash: '4 4' },
+  supports: { color: '#14b8a6', width: 1.5, dash: '3 5' },
 };
 
 type Props = {

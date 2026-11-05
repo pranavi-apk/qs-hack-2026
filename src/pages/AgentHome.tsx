@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import { ArrowRight, FileText, GitBranch, Paperclip, Scale, Search } from 'lucide-react';
 
 type Props = {
-  onStart: (opts: { prompt: string; files: File[]; sample: boolean }) => void;
+  onStart: (opts: { prompt: string; files: File[]; sample: boolean }) => void | Promise<void>;
+  starting?: boolean;
 };
 
 const CARDS = [
@@ -14,9 +15,9 @@ const CARDS = [
   },
   {
     id: 'impact',
-    title: 'Trace contract\nknock-on impact',
+    title: 'Trace pack\n& knock-on',
     icon: GitBranch,
-    prompt: 'Show global impact graph for lobby variation',
+    prompt: 'Show pack documents and contract knock-on impact graph',
   },
   {
     id: 'claim',
@@ -38,14 +39,15 @@ const PILLS = [
   'Identify all inflated claim lines under GCC 62',
 ];
 
-export default function AgentHome({ onStart }: Props) {
+export default function AgentHome({ onStart, starting = false }: Props) {
   const [prompt, setPrompt] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const submit = (text?: string, sample = false) => {
+    if (starting) return;
     const p = (text ?? prompt).trim() || 'Analyse uploaded variation document pack';
-    onStart({ prompt: p, files, sample: sample || files.length === 0 });
+    void onStart({ prompt: p, files, sample: sample && files.length === 0 });
   };
 
   return (
@@ -118,7 +120,7 @@ export default function AgentHome({ onStart }: Props) {
               placeholder="What would you like me to investigate?"
               autoComplete="off"
             />
-            <button className="composer-submit" type="submit" aria-label="Start">
+            <button className="composer-submit" type="submit" aria-label="Start" disabled={starting}>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
