@@ -8,6 +8,9 @@ import {
   Scale,
   Calculator,
 } from 'lucide-react';
+import FairValuePanel from '../components/FairValuePanel';
+import ClaimCheckPanel from '../components/ClaimCheckPanel';
+import ImpactTracePanel from '../components/ImpactTracePanel';
 import PackImpactPanel from '../components/PackImpactPanel';
 import CaseOverviewPanel from '../components/CaseOverviewPanel';
 import CitedReportPage from './CitedReportPage';
@@ -39,10 +42,6 @@ const NAV: { id: ViewId; label: string; icon: React.ReactNode }[] = [
   { id: 'claim', label: 'Claim check', icon: <Scale size={18} /> },
   { id: 'report', label: 'Evidence pack', icon: <FileCheck size={18} /> },
 ];
-
-function fmt(n: number) {
-  return n.toLocaleString('en-HK', { maximumFractionDigits: 0 });
-}
 
 export default function AgentWorkspace({
   initialPrompt,
@@ -182,7 +181,10 @@ export default function AgentWorkspace({
   const docNames = files.length ? files.map((f) => f.name) : sampleDocs;
 
   return (
-    <div className="agent agent-chat-layout" style={{ height: '100vh' }}>
+    <div
+      className={`agent agent-chat-layout ${view === 'value' || view === 'claim' ? 'agent-finance-workspace' : ''}`}
+      style={{ height: '100vh' }}
+    >
       <div className="agent-stage-wrapper">
         <div className="agent-stage" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
           {phase === 'running' ?
@@ -252,69 +254,37 @@ export default function AgentWorkspace({
 
                   {view === 'pack' &&
                     (graph ?
-                      <PackImpactPanel
-                        data={graph}
-                        uploadedNames={files.length ? files.map((f) => f.name) : docNames}
-                        onUpload={(list) => {
-                          void onReingest(Array.from(list));
-                        }}
-                      />
+                      <>
+                        <PackImpactPanel
+                          data={graph}
+                          uploadedNames={files.length ? files.map((f) => f.name) : docNames}
+                          onUpload={(list) => {
+                            void onReingest(Array.from(list));
+                          }}
+                        />
+                        <ImpactTracePanel data={graph} embedMode showGraph={false} />
+                      </>
                     : <div className="metric">Loading pack &amp; impact graph…</div>)}
 
-                  {view === 'value' && (
-                    <div>
-                      <h2 style={{ marginTop: 0 }}>HKSMM4 fair value</h2>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-                        <thead>
-                          <tr style={{ textAlign: 'left', color: '#6b645b', fontSize: 11 }}>
-                            <th style={{ padding: 8 }}>Item</th>
-                            <th style={{ padding: 8 }}>Qty</th>
-                            <th style={{ padding: 8, textAlign: 'right' }}>Rate</th>
-                            <th style={{ padding: 8, textAlign: 'right' }}>Amount</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(fv?.items ?? []).map((row: any) => (
-                            <tr key={row.item} style={{ borderTop: '1px solid #efe8da' }}>
-                              <td style={{ padding: 8, fontWeight: 600 }}>{row.item}</td>
-                              <td style={{ padding: 8 }}>
-                                {row.qty} {row.unit}
-                              </td>
-                              <td style={{ padding: 8, textAlign: 'right' }}>{fmt(row.rate)}</td>
-                              <td style={{ padding: 8, textAlign: 'right' }}>{fmt(row.amount)}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <p style={{ marginTop: 16, fontWeight: 700 }}>
-                        Fair value HK$ {fmt(fairValue)}
-                      </p>
-                    </div>
-                  )}
+                  {view === 'value' &&
+                    (detail && fv ?
+                      <FairValuePanel
+                        data={fv}
+                        variationId={variationId}
+                        onClaimCheck={() => setView('claim')}
+                      />
+                    : <div className="metric">Loading fair value…</div>)}
 
-                  {view === 'claim' && (
-                    <div>
-                      <h2 style={{ marginTop: 0 }}>Claim check</h2>
-                      <p style={{ color: '#dc2626', fontWeight: 600 }}>
-                        Inflation HK$ {fmt(inflation)} ({claim?.inflated_percentage ?? 26.3}%)
-                      </p>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
-                        {(claim?.items ?? []).map((row: any) => (
-                          <div key={row.item} className="doc-file-card" style={{ alignItems: 'flex-start' }}>
-                            <div className="doc-file-details">
-                              <strong>
-                                {row.item} · {row.flag}
-                              </strong>
-                              <span style={{ fontSize: 12, color: '#787062' }}>
-                                Claim {fmt(row.claim_amount)} vs fair {fmt(row.cascade_fair)} · Δ {fmt(row.variance)}
-                              </span>
-                              <span style={{ fontSize: 12, marginTop: 4 }}>{row.reason}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {view === 'claim' &&
+                    (detail && fv && claim ?
+                      <ClaimCheckPanel
+                        data={claim}
+                        fairValue={fv}
+                        variationId={variationId}
+                        onFairValue={() => setView('value')}
+                        onEvidencePack={() => setView('report')}
+                      />
+                    : <div className="metric">Loading claim check…</div>)}
 
                   {view === 'report' && (
                     <CitedReportPage t={t} variationId={variationId} onExport={onExport} />

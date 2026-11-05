@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --import tsx --test tests/valuation.test.mjs"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +16,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "tailwindcss": "^4.3.4",
+    "tsx": "^4.23.15",
     "vite": "^8.3.5"
   },
   "dependencies": {

@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 import './agent/tracy-agent.css';
 import './agent/cascade-theme.css';
+import './agent/valuation.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

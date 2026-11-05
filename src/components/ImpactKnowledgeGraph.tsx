@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Database, GitBranch } from 'lucide-react';
-import { anchorEdge, layoutImpactGraph } from '../lib/impactGraphLayout';
+import { anchorEdge, layoutImpactGraph, type LayoutNode } from '../lib/impactGraphLayout';
 
 export type GraphNode = {
   id: string;
@@ -58,6 +58,30 @@ const LINK_STROKE: Record<string, { color: string; width: number; dash?: string 
   supports: { color: '#14b8a6', width: 1.5, dash: '3 5' },
 };
 
+function ClusterLabel({ node, cx, cy, text }: { node: LayoutNode; cx: number; cy: number; text: string }) {
+  const dx = node.x - cx;
+  const dy = node.y - cy;
+  const len = Math.hypot(dx, dy) || 1;
+  const x = node.x + (dx / len) * (node.r + 12);
+  const y = node.y + (dy / len) * (node.r + 4);
+  const anchor = Math.abs(dx) < 36 ? 'middle' : dx > 0 ? 'start' : 'end';
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor={anchor}
+      fill="#1c1915"
+      fontSize={12}
+      fontWeight={650}
+      stroke="#F5F2E9"
+      strokeWidth={4}
+      paintOrder="stroke"
+    >
+      {text}
+    </text>
+  );
+}
+
 type Props = {
   data: ImpactGraphPayload;
   lang: string;
@@ -105,7 +129,7 @@ export default function ImpactKnowledgeGraph({ data, lang, onSelectNode, selecte
 
   const cx = dims.w / 2;
   const cy = dims.h / 2;
-  const orbit = Math.min(dims.w, dims.h) / 2 - 96;
+  const orbit = Math.min(dims.w, dims.h) / 2 - 106;
 
   return (
     <div
@@ -245,19 +269,10 @@ export default function ImpactKnowledgeGraph({ data, lang, onSelectNode, selecte
               )}
               {node.type === 'cluster' && (
                 <>
-                  <text
-                    x={node.x}
-                    y={node.y - 4}
-                    textAnchor="middle"
-                    fill="#78350f"
-                    fontSize={10}
-                    fontWeight={700}
-                  >
-                    {title.join(' ').length > 16 ? `${title.join(' ').slice(0, 14)}…` : title.join(' ')}
+                  <text x={node.x} y={node.y + 4} textAnchor="middle" fill="#78350f" fontSize={13} fontWeight={700}>
+                    {node.count}
                   </text>
-                  <text x={node.x} y={node.y + 12} textAnchor="middle" fill="#92400e" fontSize={10} fontFamily="monospace">
-                    ({node.count})
-                  </text>
+                  <ClusterLabel node={node} cx={cx} cy={cy} text={title.join(' ').replace(/\s+/g, ' ')} />
                 </>
               )}
               {node.type === 'bq_item' && (
