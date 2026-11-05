@@ -17,18 +17,6 @@ Interactive QS agent workspace: composer + suggested prompts, then a case view w
 6. **Certify** — Milestone table only (qty from Drawing A-201; photos not used for m²).
 7. **Evidence pack** — Cited Cap. 652 payment-response annex (provability, workflow, claim annex, SHA digest). Print/PDF export.
 
-## 🧩 Built on / related open source (patterns, not a full ERP fork)
-
-| Source | What we reuse | Where in Cascade |
-|--------|----------------|------------------|
-| [OpenConstructionERP](https://github.com/datadrivenconstruction/OpenConstructionERP) (AGPL — **ideas / API shape only**) | Claims evidence reconstruct, change provability, variation→claim trail, payment clock | `evidence_pack.py`, Screen 6 |
-| [pdf2takeoff](https://github.com/ajflow/pdf2takeoff) | Drawing takeoff path when PDF samples arrive | Fair Value qty / drawing takeoff API |
-| Neo4j GraphRAG pattern | Impact ontology | `graph_store.py`, Screen 2 |
-
-**HK layer (ours):** HKSMM4 valuation, GCC Clause 62 adjudication, Cap. 652 wording, HA lobby demo V-2026-017, trilingual UI.
-
----
-
 ## 📐 Measurement stack (local)
 
 - **Drawing qty (120 m² tiles)**: Lobby grid **12 m × 10 m** from **Drawing A-201**, Fair Value line items.
